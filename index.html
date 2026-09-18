@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>yoxi 移動雷達</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-void:#0B0D14;
+    --bg-deep:#12141F;
+    --bg-card:#1B1F2E;
+    --bg-card-2:#232838;
+    --stroke:rgba(255,255,255,0.08);
+    --accent:#FFB03B;
+    --accent-soft:rgba(255,176,59,0.14);
+    --teal:#4FE6C6;
+    --teal-soft:rgba(79,230,198,0.14);
+    --text-hi:#F4F5F8;
+    --text-mid:#B7BBCB;
+    --text-low:#767C93;
+    --danger:#FF6B6B;
+    --radius-lg:28px;
+    --radius-md:18px;
+    --radius-sm:12px;
+  }
+  :root[data-theme="light"]{
+    --bg-void:#EDEFF6;
+    --bg-deep:#F6F7FB;
+    --bg-card:#FFFFFF;
+    --bg-card-2:#F1F3F9;
+    --stroke:rgba(20,22,35,0.08);
+    --text-hi:#161822;
+    --text-mid:#565B70;
+    --text-low:#8A8FA3;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg-void:#0B0D14; --bg-deep:#12141F; --bg-card:#1B1F2E; --bg-card-2:#232838;
+      --stroke:rgba(255,255,255,0.08); --text-hi:#F4F5F8; --text-mid:#B7BBCB; --text-low:#767C93;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg-void:#0B0D14; --bg-deep:#12141F; --bg-card:#1B1F2E; --bg-card-2:#232838;
+    --stroke:rgba(255,255,255,0.08); --text-hi:#F4F5F8; --text-mid:#B7BBCB; --text-low:#767C93;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg-void);
+    font-family:"Noto Sans TC","Manrope",-apple-system,BlinkMacSystemFont,sans-serif;
+    color:var(--text-hi);
+    height:100vh;
+    overflow:hidden;
+    display:flex;
+    align-items:stretch;
+    justify-content:center;
+    padding:0;
+  }
+  .stage{
+    width:100%;
+    height:100%;
+    display:flex;
+    align-items:stretch;
+    justify-content:center;
+  }
+
+  /* ---- full-screen app frame ---- */
+  .phone{
+    width:100%;
+    height:100%;
+    max-width:560px;
+    background:var(--bg-deep);
+    border-radius:0;
+    border:none;
+    box-shadow:none;
+    position:relative;
+    overflow:hidden;
+    flex-shrink:0;
+    margin:0 auto;
+  }
+  .notch{display:none;}
+  .screen{
+    position:absolute; inset:0;
+    display:flex;
+    flex-direction:column;
+    padding-top:14px;
+  }
+  .statusbar{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:6px 26px 4px;
+    font-family:"Manrope",sans-serif;
+    font-weight:700;
+    font-size:14px;
+    color:var(--text-hi);
+    flex-shrink:0;
+  }
+
+  .view{
+    flex:1;
+    overflow-y:auto;
+    padding:6px 20px 100px;
+    display:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  .view.active{display:block;}
+  .view::-webkit-scrollbar{display:none;}
+
+  .app-header{
+    display:flex; align-items:center; justify-content:space-between;
+    margin:10px 0 18px;
+  }
+  .app-header .greet{
+    font-size:12.5px;
+    color:var(--text-low);
+    margin-bottom:3px;
+    font-weight:500;
+  }
+  .app-header h2{
+    margin:0;
+    font-size:21px;
+    font-weight:800;
+    letter-spacing:-0.01em;
+  }
+  .avatar{
+    width:38px;height:38px;border-radius:50%;
+    background:linear-gradient(135deg,var(--accent),#FF7A5C);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;color:#1a1200;font-size:14px;
+    flex-shrink:0;
+  }
+  .mascot-avatar{
+    width:52px;height:52px;border-radius:50%;
+    background:var(--bg-card-2);
+    border:1px solid var(--stroke);
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+    margin-right:12px;
+  }
+  .online-dot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--teal);
+    display:inline-block;
+    box-shadow:0 0 0 3px var(--teal-soft);
+  }
+
+  /* Radar card */
+  .radar-card{
+    background:radial-gradient(circle at 20% 0%, #2A2340 0%, var(--bg-card) 55%);
+    border:1px solid var(--stroke);
+    border-radius:var(--radius-lg);
+    padding:22px 20px 20px;
+    position:relative;
+    overflow:hidden;
+    margin-bottom:16px;
+  }
+  :root[data-theme="light"] .radar-card{
+    background:radial-gradient(circle at 20% 0%, #E9E4FF 0%, var(--bg-card) 60%);
+  }
+  .radar-card .pulse{
+    position:absolute; top:-30px; right:-30px;
+    width:140px;height:140px;border-radius:50%;
+    background:radial-gradient(circle,var(--teal-soft),transparent 70%);
+  }
+  .radar-tag{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:11.5px; font-weight:700; color:var(--teal);
+    background:var(--teal-soft);
+    padding:4px 10px; border-radius:999px;
+    margin-bottom:14px;
+    font-family:"Manrope",sans-serif;
+  }
+  .radar-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:blink 1.6s infinite;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.25;}}
+  .radar-line{
+    font-size:19px;
+    font-weight:700;
+    line-height:1.55;
+    margin:0 0 16px;
+    position:relative;
+    z-index:2;
+  }
+  .radar-meta{
+    display:flex; gap:10px; margin-bottom:18px; position:relative; z-index:2;
+  }
+  .meta-chip{
+    flex:1;
+    background:var(--bg-card-2);
+    border-radius:var(--radius-sm);
+    padding:10px 12px;
+    border:1px solid var(--stroke);
+  }
+  .meta-chip .num{font-family:"Manrope",sans-serif;font-weight:800;font-size:16px;}
+  .meta-chip .lbl{font-size:11px;color:var(--text-low);margin-top:2px;}
+  .cta-row{display:flex;gap:10px;position:relative;z-index:2;}
+  .btn{
+    border:none; cursor:pointer;
+    font-family:"Noto Sans TC",sans-serif;
+    font-weight:700;
+    border-radius:999px;
+    padding:13px 18px;
+    font-size:14.5px;
+    transition:transform .15s ease, opacity .15s ease;
+  }
+  .btn:active{transform:scale(0.96);}
+  .btn-primary{background:var(--accent);color:#241800;flex:1;}
+  .btn-ghost{background:var(--bg-card-2);color:var(--text-hi);border:1px solid var(--stroke);}
+
+  .section-title{
+    font-size:13px; font-weight:700; color:var(--text-low);
+    margin:22px 0 10px;
+  }
+  .timeline{
+    display:flex; gap:10px; overflow-x:auto; padding-bottom:6px; margin:0 -20px; padding-left:20px; padding-right:20px;
+  }
+  .timeline::-webkit-scrollbar{display:none;}
+  .tslot{
+    flex:0 0 auto; width:64px;
+    background:var(--bg-card);
+    border:1px solid var(--stroke);
+    border-radius:16px;
+    padding:12px 0;
+    text-align:center;
+  }
+  .tslot.now{border-color:var(--accent); background:var(--accent-soft);}
+  .tslot .t{font-size:11px;color:var(--text-low);margin-bottom:6px;}
+  .tslot .ic{font-size:18px;margin-bottom:6px;}
+  .tslot .v{font-size:12px;font-weight:700;}
+
+  .info-card{
+    background:var(--bg-card);
+    border:1px solid var(--stroke);
+    border-radius:var(--radius-md);
+    padding:16px;
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    margin-bottom:10px;
+  }
+  .info-card .ic-wrap{
+    width:38px;height:38px;border-radius:11px;
+    background:var(--bg-card-2);
+    display:flex;align-items:center;justify-content:center;
+    font-size:17px; flex-shrink:0;
+  }
+  .info-card .title{font-weight:700;font-size:14.5px;margin-bottom:3px;}
+  .info-card .desc{font-size:12.5px;color:var(--text-mid);line-height:1.5;}
+
+  /* Quest view */
+  .points-card{
+    background:linear-gradient(135deg, var(--bg-card-2), var(--bg-card));
+    border:1px solid var(--stroke);
+    border-radius:var(--radius-lg);
+    padding:20px;
+    margin-bottom:18px;
+  }
+  .points-top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px;}
+  .points-top .num{font-family:"Manrope",sans-serif;font-size:30px;font-weight:800;color:var(--accent);}
+  .points-top .lbl{font-size:12px;color:var(--text-low);}
+  .bar-track{height:8px;border-radius:99px;background:var(--bg-void);overflow:hidden;}
+  :root[data-theme="light"] .bar-track{background:#E4E6F0;}
+  .bar-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--accent));border-radius:99px;transition:width .5s ease;}
+  .points-note{font-size:11.5px;color:var(--text-low);margin-top:8px;}
+
+  .quest-item{
+    display:flex; align-items:center; gap:12px;
+    background:var(--bg-card);
+    border:1px solid var(--stroke);
+    border-radius:var(--radius-md);
+    padding:14px;
+    margin-bottom:10px;
+    cursor:pointer;
+    user-select:none;
+    transition:opacity .2s ease;
+  }
+  .quest-item.done{opacity:0.5;}
+  .quest-check{
+    width:24px;height:24px;border-radius:50%;
+    border:2px solid var(--text-low);
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+    font-size:13px;color:transparent;
+    transition:all .2s ease;
+  }
+  .quest-item.done .quest-check{background:var(--teal);border-color:var(--teal);color:#04201a;}
+  .quest-body .title{font-weight:700;font-size:14px;margin-bottom:2px;}
+  .quest-item.done .quest-body .title{text-decoration:line-through;}
+  .quest-body .desc{font-size:12px;color:var(--text-low);}
+  .quest-pt{
+    margin-left:auto;font-family:"Manrope",sans-serif;font-weight:800;font-size:13px;color:var(--accent);flex-shrink:0;
+  }
+
+  .wrap-card{
+    background:radial-gradient(circle at 100% 0%, var(--accent-soft), var(--bg-card) 60%);
+    border:1px solid var(--stroke);
+    border-radius:var(--radius-lg);
+    padding:20px;
+  }
+  .wrap-card h3{margin:0 0 4px;font-size:15px;font-weight:800;}
+  .wrap-card .sub{font-size:12px;color:var(--text-low);margin-bottom:16px;}
+  .wrap-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+  .wrap-stat .num{font-family:"Manrope",sans-serif;font-weight:800;font-size:20px;}
+  .wrap-stat .lbl{font-size:11px;color:var(--text-low);margin-top:2px;}
+
+  /* Assistant */
+  .chat-wrap{display:flex;flex-direction:column;height:100%;}
+  .chat-log{flex:1;overflow-y:auto;padding:4px 0 12px;}
+  .msg{max-width:80%;padding:11px 14px;border-radius:16px;font-size:13.5px;line-height:1.55;margin-bottom:10px;}
+  .msg.bot{background:var(--bg-card);border:1px solid var(--stroke);border-bottom-left-radius:4px;}
+  .msg.user{background:var(--accent);color:#241800;font-weight:600;margin-left:auto;border-bottom-right-radius:4px;}
+  .typing{display:inline-flex;gap:4px;padding:4px 0;}
+  .typing span{width:6px;height:6px;border-radius:50%;background:var(--text-low);animation:tbounce 1s infinite;}
+  .typing span:nth-child(2){animation-delay:.15s;}
+  .typing span:nth-child(3){animation-delay:.3s;}
+  @keyframes tbounce{0%,60%,100%{transform:translateY(0);opacity:.4;}30%{transform:translateY(-4px);opacity:1;}}
+  .quick-replies{display:flex;flex-wrap:wrap;gap:8px;padding:10px 0 4px;}
+  .qr-btn{
+    background:var(--bg-card-2);
+    border:1px solid var(--stroke);
+    color:var(--text-hi);
+    font-size:12.5px;
+    padding:9px 13px;
+    border-radius:999px;
+    cursor:pointer;
+    font-family:"Noto Sans TC",sans-serif;
+  }
+  .qr-btn:active{transform:scale(0.96);}
+
+  /* bottom nav */
+  .navbar{
+    position:absolute; left:0; right:0; bottom:0;
+    background:var(--bg-deep);
+    border-top:1px solid var(--stroke);
+    display:flex;
+    padding:10px 10px 18px;
+    z-index:40;
+  }
+  .navbtn{
+    flex:1; background:none; border:none; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    color:var(--text-low);
+    font-family:"Noto Sans TC",sans-serif;
+    font-size:10.5px;
+    font-weight:600;
+    padding:4px 0;
+  }
+  .navbtn .ic{font-size:19px;}
+  .navbtn.active{color:var(--accent);}
+
+  .toast{
+    position:absolute; left:50%; bottom:96px; transform:translateX(-50%) translateY(20px);
+    background:var(--text-hi); color:var(--bg-void);
+    padding:10px 18px; border-radius:999px;
+    font-size:12.5px; font-weight:700;
+    opacity:0; transition:all .3s ease;
+    z-index:60; white-space:nowrap;
+    pointer-events:none;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  .theme-toggle{
+    position:fixed; top:14px; right:16px;
+    background:var(--bg-card); border:1px solid var(--stroke);
+    color:var(--text-hi); border-radius:999px;
+    padding:6px 12px; font-size:11.5px; cursor:pointer;
+    font-family:"Manrope",sans-serif; font-weight:700;
+    z-index:100;
+    opacity:0.85;
+  }
+
+  @media (max-width:600px){
+    .phone{max-width:100%;}
+  }
+</style>
+</head>
+<body>
+
+<button class="theme-toggle" id="themeToggle" type="button">🌙 深色</button>
+
+<div class="stage">
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="screen">
+      <div class="statusbar">
+        <span id="clock">9:41</span>
+        <span>●●●●  📶  🔋</span>
+      </div>
+
+      <!-- RADAR VIEW -->
+      <section class="view active" id="view-radar">
+        <div class="app-header">
+          <div>
+            <div class="greet">早安，內湖的你</div>
+            <h2>今日出發雷達</h2>
+          </div>
+          <div class="avatar">王</div>
+        </div>
+
+        <div class="radar-card">
+          <div class="pulse"></div>
+          <span class="radar-tag"><span class="dot"></span>即時情境更新中</span>
+          <p class="radar-line">忠孝東路陣雨機率 70%，建議提前 10 分鐘出門；常搭路線現在等待約 3 分鐘。</p>
+          <div class="radar-meta">
+            <div class="meta-chip"><div class="num">70%</div><div class="lbl">降雨機率</div></div>
+            <div class="meta-chip"><div class="num">3 分</div><div class="lbl">預估等待</div></div>
+            <div class="meta-chip"><div class="num">中等</div><div class="lbl">路況壅塞</div></div>
+          </div>
+          <div class="cta-row">
+            <button class="btn btn-primary" onclick="showToast('已為你保留車輛，出發前會再提醒 🚗')">先幫我留車</button>
+            <button class="btn btn-ghost" onclick="showToast('已延後 10 分鐘提醒')">稍後提醒</button>
+          </div>
+        </div>
+
+        <div class="section-title">未來 3 小時</div>
+        <div class="timeline">
+          <div class="tslot now"><div class="t">現在</div><div class="ic">🌦️</div><div class="v">3分</div></div>
+          <div class="tslot"><div class="t">08:30</div><div class="ic">🌧️</div><div class="v">6分</div></div>
+          <div class="tslot"><div class="t">09:00</div><div class="ic">🌧️</div><div class="v">9分</div></div>
+          <div class="tslot"><div class="t">09:30</div><div class="ic">⛅</div><div class="v">4分</div></div>
+          <div class="tslot"><div class="t">10:00</div><div class="ic">☀️</div><div class="v">2分</div></div>
+        </div>
+
+        <div class="section-title">為什麼是現在</div>
+        <div class="info-card">
+          <div class="ic-wrap">📍</div>
+          <div>
+            <div class="title">個人常用路線</div>
+            <div class="desc">依你過去 30 天的通勤紀錄，學習你的出發時間與慣用路線。</div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="ic-wrap">🌧️</div>
+          <div>
+            <div class="title">氣象署即時資料</div>
+            <div class="desc">結合天氣與供需資料，判斷是否該提早出門或先叫車。</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- QUEST VIEW -->
+      <section class="view" id="view-quest">
+        <div class="app-header">
+          <div>
+            <div class="greet">城市任務</div>
+            <h2>本週移動足跡</h2>
+          </div>
+          <div class="avatar">王</div>
+        </div>
+
+        <div class="points-card">
+          <div class="points-top">
+            <div><div class="num" id="ptNum">340</div><div class="lbl">本月任務點數</div></div>
+            <div class="lbl">下一階段 500</div>
+          </div>
+          <div class="bar-track"><div class="bar-fill" id="ptBar" style="width:68%"></div></div>
+          <div class="points-note">再完成 2 項任務即可兌換異業咖啡優惠券</div>
+        </div>
+
+        <div class="section-title">進行中任務</div>
+        <div class="quest-item" data-pt="40" onclick="toggleQuest(this)">
+          <div class="quest-check">✓</div>
+          <div class="quest-body"><div class="title">非通勤時段搭乘一次</div><div class="desc">週末或平日離峰完成一趟叫車</div></div>
+          <div class="quest-pt">+40</div>
+        </div>
+        <div class="quest-item done" data-pt="20" onclick="toggleQuest(this)">
+          <div class="quest-check">✓</div>
+          <div class="quest-body"><div class="title">連續 3 天打開雷達</div><div class="desc">養成每天看一眼出行建議的習慣</div></div>
+          <div class="quest-pt">+20</div>
+        </div>
+        <div class="quest-item" data-pt="60" onclick="toggleQuest(this)">
+          <div class="quest-check">✓</div>
+          <div class="quest-body"><div class="title">體驗一次電動車隊</div><div class="desc">選擇 n7 電動車完成一趟行程</div></div>
+          <div class="quest-pt">+60</div>
+        </div>
+        <div class="quest-item" data-pt="30" onclick="toggleQuest(this)">
+          <div class="quest-check">✓</div>
+          <div class="quest-body"><div class="title">分享本月移動回顧</div><div class="desc">將移動足跡卡片分享到社群</div></div>
+          <div class="quest-pt">+30</div>
+        </div>
+
+        <div class="section-title">本月移動回顧</div>
+        <div class="wrap-card">
+          <h3>你的九月足跡</h3>
+          <div class="sub">生成專屬可分享卡片</div>
+          <div class="wrap-grid">
+            <div class="wrap-stat"><div class="num">128 km</div><div class="lbl">本月移動距離</div></div>
+            <div class="wrap-stat"><div class="num">6.4 kg</div><div class="lbl">減碳量</div></div>
+            <div class="wrap-stat"><div class="num">內湖</div><div class="lbl">最常出沒地點</div></div>
+            <div class="wrap-stat"><div class="num">14 次</div><div class="lbl">雷達提醒採用</div></div>
+          </div>
+          <button class="btn btn-primary" style="width:100%" onclick="showToast('回顧卡片已儲存到相簿 🖼️')">分享我的移動回顧</button>
+        </div>
+      </section>
+
+      <!-- ASSISTANT VIEW -->
+      <section class="view" id="view-chat">
+        <div class="chat-wrap">
+          <div class="app-header" style="margin-bottom:10px;">
+            <div class="mascot-avatar" aria-hidden="true">
+              <svg viewBox="0 0 64 64" width="42" height="42">
+                <circle cx="32" cy="36" r="22" fill="url(#g1)"/>
+                <line x1="32" y1="14" x2="32" y2="4" stroke="#F4F5F8" stroke-width="2.5" stroke-linecap="round"/>
+                <circle cx="32" cy="4" r="4" fill="#FFB03B"/>
+                <circle cx="24" cy="34" r="3.2" fill="#0B0D14"/>
+                <circle cx="40" cy="34" r="3.2" fill="#0B0D14"/>
+                <path d="M23 44 Q32 51 41 44" stroke="#0B0D14" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+                <defs>
+                  <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#7CF2D6"/>
+                    <stop offset="100%" stop-color="#3FB6A8"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <div style="flex:1;">
+              <div class="greet" style="display:flex;align-items:center;gap:6px;">
+                達達 <span class="online-dot"></span> 在線上
+              </div>
+              <h2 style="font-size:18px;">你的城市移動搭子 📡</h2>
+            </div>
+          </div>
+          <div class="chat-log" id="chatLog">
+            <div class="msg bot">嗨嗨，我是達達 👋 你的專屬城市雷達！哪裡好叫車、路況怎樣、附近有什麼優惠，儘管問我，我盡量講人話，不打官腔～</div>
+          </div>
+          <div class="quick-replies" id="quickReplies">
+            <button class="qr-btn" onclick="askBot('信義區現在好叫車嗎？')">信義區現在好叫車嗎？</button>
+            <button class="qr-btn" onclick="askBot('晚點會塞車嗎？')">晚點會塞車嗎？</button>
+            <button class="qr-btn" onclick="askBot('附近有什麼優惠？')">附近有什麼優惠？</button>
+          </div>
+        </div>
+      </section>
+
+      <div class="toast" id="toast"></div>
+
+      <nav class="navbar">
+        <button class="navbtn active" data-view="radar" onclick="switchView('radar')">
+          <span class="ic">📡</span>每日雷達
+        </button>
+        <button class="navbtn" data-view="quest" onclick="switchView('quest')">
+          <span class="ic">🏙️</span>城市任務
+        </button>
+        <button class="navbtn" data-view="chat" onclick="switchView('chat')">
+          <span class="ic">💬</span>問達達
+        </button>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---- theme toggle (per-viewer convenience only) ----
+  const themeBtn = document.getElementById('themeToggle');
+  function applyTheme(t){
+    if(t==='light'){ document.documentElement.setAttribute('data-theme','light'); themeBtn.textContent='☀️ 淺色'; }
+    else { document.documentElement.setAttribute('data-theme','dark'); themeBtn.textContent='🌙 深色'; }
+  }
+  let currentTheme = 'dark';
+  try{
+    const saved = localStorage.getItem('yoxi_theme');
+    if(saved) currentTheme = saved;
+  }catch(e){}
+  applyTheme(currentTheme);
+  themeBtn.addEventListener('click', () => {
+    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    applyTheme(currentTheme);
+    try{ localStorage.setItem('yoxi_theme', currentTheme); }catch(e){}
+  });
+
+  // ---- clock ----
+  function tickClock(){
+    const d = new Date();
+    const h = d.getHours().toString().padStart(2,'0');
+    const m = d.getMinutes().toString().padStart(2,'0');
+    document.getElementById('clock').textContent = h+':'+m;
+  }
+  tickClock(); setInterval(tickClock, 15000);
+
+  // ---- nav switching ----
+  function switchView(name){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+name).classList.add('active');
+    document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active', b.dataset.view===name));
+  }
+
+  // ---- toast ----
+  let toastTimer;
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+  }
+
+  // ---- quest points (in-memory, per-viewer via localStorage) ----
+  let points = 340;
+  try{
+    const saved = localStorage.getItem('yoxi_points');
+    if(saved) points = parseInt(saved,10);
+  }catch(e){}
+  function renderPoints(){
+    document.getElementById('ptNum').textContent = points;
+    const pct = Math.min(100, Math.round((points/500)*100));
+    document.getElementById('ptBar').style.width = pct+'%';
+  }
+  renderPoints();
+
+  function toggleQuest(el){
+    const wasDone = el.classList.contains('done');
+    const pt = parseInt(el.dataset.pt,10);
+    el.classList.toggle('done');
+    points += wasDone ? -pt : pt;
+    if(points<0) points = 0;
+    renderPoints();
+    try{ localStorage.setItem('yoxi_points', points); }catch(e){}
+    if(!wasDone) showToast('任務完成！+'+pt+' 點數 🎉');
+  }
+
+  // ---- chatbot (canned demo answers) ----
+  const answers = {
+    '信義區現在好叫車嗎？': '信義區現在有點搶手，等待大概 8 分鐘 😅 偷偷跟你說，走到仁愛路那邊等車，3 分鐘就有車囉，要幫你導航過去嗎？',
+    '晚點會塞車嗎？': '下午 5 點後忠孝東路會開始塞唷，車速大概慢 3 成。建議提前或晚個 30 分鐘出門，我到時候會再提醒你的！',
+    '附近有什麼優惠？': '你最近很常在內湖出沒耶～這週剛好有異業咖啡券可以用任務點數換，電動車隊 n7 首搭也有折扣，要我幫你留一張嗎？'
+  };
+  function askBot(q){
+    const log = document.getElementById('chatLog');
+    const userMsg = document.createElement('div');
+    userMsg.className = 'msg user';
+    userMsg.textContent = q;
+    log.appendChild(userMsg);
+    log.scrollTop = log.scrollHeight;
+
+    const typing = document.createElement('div');
+    typing.className = 'msg bot';
+    typing.innerHTML = '<span class="typing"><span></span><span></span><span></span></span>';
+    log.appendChild(typing);
+    log.scrollTop = log.scrollHeight;
+
+    setTimeout(()=>{
+      typing.textContent = answers[q] || '這題有點難倒達達了 😳 我還在學習中，之後會串接更多城市資料來回答你！';
+      log.scrollTop = log.scrollHeight;
+    }, 900);
+  }
+</script>
+</body>
+</html>

@@ -78,6 +78,7 @@ h2{font-size:11px;letter-spacing:.08em;color:var(--mt);margin:14px 0 8px;text-tr
 .bt{display:flex;gap:7px;margin-top:6px}
 .btn{flex:1;border:0;border-radius:10px;padding:10px 6px;font:inherit;font-weight:700;font-size:12px;cursor:pointer;background:#27334f;color:#e2e8f0}
 .btn.p{background:var(--red);color:#fff;flex:1.6}
+a.btn{text-decoration:none;display:flex;align-items:center;justify-content:center;text-align:center}
 .btn:active{transform:scale(.97)}
 .cnf{font-size:10px;color:#94a3b8;text-align:center;margin-top:8px}
 .ov{position:absolute;inset:0;background:rgba(2,6,16,.96);z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;animation:up .3s}
@@ -137,6 +138,8 @@ function log(k,m){st.logs.unshift("["+new Date().toTimeString().slice(0,8)+"] "+
 function mt(sp){return Math.max(40,Math.min(99,sp.match+(st.adj[sp.title]||0)))}
 function PB(p){return['<span class="bd b0">⛔ 不可開車</span>','<span class="bd b1">🟢 容易</span>','<span class="bd b2">🟡 普通</span>','<span class="bd b3">🔴 困難</span>'][p]}
 function calc(sp){var yox=2+sp.drive;if(!sp.park)return{yox:yox,self:null,save:null};var self=Math.round(sp.drive+(sp.lo+sp.hi)/2);return{yox:yox,self:self,save:self-yox}}
+var DEST={"返回家中(南港→市政府)":"市政府捷運站","返回家中(大安→板橋)":"板橋車站","前往台北車站":"台北車站","松菸誠品食堂":"松山文創園區 誠品","Citylink 美食街":"南港 Citylink"};
+function navUrl(sp){var q=DEST[sp.title]||(sp.title+" 台北");return"https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(q)+"&travelmode="+(sp.park===0?"transit":"driving")}
 function cmp(sp){var c=calc(sp),l,v;
  if(c.self===null){l='<div class="cb"><span>🚗 自行開車</span><b>⛔ 不建議</b><small>飲酒或夜間不建議自駕</small></div>';v="飲酒不開車,搭 yoxi 最安心"}
  else{l='<div class="cb"><span>🚗 自行開車</span><b>約 '+c.self+' 分</b><small>行車 '+sp.drive+' + 找位 '+sp.lo+'–'+sp.hi+'(Phase 2 預估區間)</small></div>';
@@ -150,7 +153,7 @@ function radar(c){var h="";
  h+='<div class="sh"><span style="background:none;color:#e2e8f0;font-size:12px;font-weight:700;padding:0">🧭 '+c.n+'探索</span><span>2 熟悉 + 1 驚喜</span></div>';
  c.sp.forEach(function(s,i){h+='<div class="sc'+(st.sel===i?" on":"")+'" data-a="spot" data-i="'+i+'">'+(s.sur?'<i class="sur">⚡ 受控驚喜</i>':"")+'<div class="r"><b>'+s.title+'</b><span class="rt">★'+s.rt+'</span></div><p class="mu">'+s.cu+' · '+s.price+'</p><div class="r2"><span>🚶 '+s.walk+' | 🚗 '+s.drive+' 分</span>'+PB(s.park)+'</div><p class="rs">「'+s.reason+'」<em>匹配 '+mt(s)+'%</em></p></div>'});
  var sp=c.sp[st.sel];
- h+='<div class="dec"><h4>🛣️ 去得了嗎?去「'+sp.title+'」</h4>'+cmp(sp)+'<div class="bt"><button class="btn" data-a="save">'+(st.saved[sp.title]?"✓ 已收藏":"☆ 收藏")+'</button><button class="btn" data-a="nav">導航</button><button class="btn p" data-a="ride">🚕 叫 yoxi · NT$'+sp.fare+'</button></div>'+
+ h+='<div class="dec"><h4>🛣️ 去得了嗎?去「'+sp.title+'」</h4>'+cmp(sp)+'<div class="bt"><button class="btn" data-a="save">'+(st.saved[sp.title]?"✓ 已收藏":"☆ 收藏")+'</button><a class="btn" data-a="nav" href="'+navUrl(sp)+'" target="_blank" rel="noopener noreferrer">🧭 Google 導航</a><button class="btn p" data-a="ride">🚕 叫 yoxi · NT$'+sp.fare+'</button></div>'+
  '<div class="bt"><button class="btn" data-a="went">我去了</button><button class="btn" data-a="skip">不太適合</button></div><div class="cnf">預估僅供參考,信心:'+(sp.park?"中":"高")+' · 你的回饋會校正下次推薦</div></div>';
  return h}
 function tg(k,t,d,v){return'<div class="tg"><div>'+t+'<small>'+d+'</small></div><input type="checkbox" data-p="'+k+'"'+(v?" checked":"")+'></div>'}
@@ -188,7 +191,7 @@ function act(a,e){var c=S[st.sc],sp=c.sp[st.sel];
  if(a==="nc"){st.note=false;return phone()}
  if(a==="tab"){st.tab=e.dataset.t;return phone()}
  if(a==="save"){if(!st.saved[sp.title]){st.saved[sp.title]=1;st.adj[sp.title]=(st.adj[sp.title]||0)+3;st.s.dec++;log("LEARN","收藏「"+sp.title+"」→ 偏好 +3")}return all()}
- if(a==="nav"){st.adj[sp.title]=(st.adj[sp.title]||0)+2;st.s.dec++;log("DECIDE","開啟導航 → 偏好 +2");return all()}
+ if(a==="nav"){st.adj[sp.title]=(st.adj[sp.title]||0)+2;st.s.dec++;log("DECIDE","開啟 Google Maps 導航 → 偏好 +2");return}
  if(a==="went"){st.adj[sp.title]=(st.adj[sp.title]||0)+4;st.s.dec++;log("LEARN","實際前往「"+sp.title+"」→ 偏好 +4");return all()}
  if(a==="skip"){st.adj[sp.title]=(st.adj[sp.title]||0)-6;log("LEARN","「"+sp.title+"」不適合"+(sp.sur?",下次降低此類突破幅度":"")+" → 偏好 -6");return all()}
  if(a==="ride"){st.s.ride++;st.disp=1;log("MOVE","呼叫 yoxi 前往「"+sp.title+"」");clearTimeout(tm);tm=setTimeout(function(){st.disp=2;phone();tm=setTimeout(function(){st.disp=3;phone()},2600)},1800);return phone()}

@@ -1,650 +1,203 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>yoxi 移動雷達</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>yoxi AI 移動雷達</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
 <style>
-  :root{
-    --bg-void:#0B0D14;
-    --bg-deep:#12141F;
-    --bg-card:#1B1F2E;
-    --bg-card-2:#232838;
-    --stroke:rgba(255,255,255,0.08);
-    --accent:#FFB03B;
-    --accent-soft:rgba(255,176,59,0.14);
-    --teal:#4FE6C6;
-    --teal-soft:rgba(79,230,198,0.14);
-    --text-hi:#F4F5F8;
-    --text-mid:#B7BBCB;
-    --text-low:#767C93;
-    --danger:#FF6B6B;
-    --radius-lg:28px;
-    --radius-md:18px;
-    --radius-sm:12px;
-  }
-  :root[data-theme="light"]{
-    --bg-void:#EDEFF6;
-    --bg-deep:#F6F7FB;
-    --bg-card:#FFFFFF;
-    --bg-card-2:#F1F3F9;
-    --stroke:rgba(20,22,35,0.08);
-    --text-hi:#161822;
-    --text-mid:#565B70;
-    --text-low:#8A8FA3;
-  }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --bg-void:#0B0D14; --bg-deep:#12141F; --bg-card:#1B1F2E; --bg-card-2:#232838;
-      --stroke:rgba(255,255,255,0.08); --text-hi:#F4F5F8; --text-mid:#B7BBCB; --text-low:#767C93;
-    }
-  }
-  :root[data-theme="dark"]{
-    --bg-void:#0B0D14; --bg-deep:#12141F; --bg-card:#1B1F2E; --bg-card-2:#232838;
-    --stroke:rgba(255,255,255,0.08); --text-hi:#F4F5F8; --text-mid:#B7BBCB; --text-low:#767C93;
-  }
-
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  html,body{height:100%;}
-  body{
-    background:var(--bg-void);
-    font-family:"Noto Sans TC","Manrope",-apple-system,BlinkMacSystemFont,sans-serif;
-    color:var(--text-hi);
-    height:100vh;
-    overflow:hidden;
-    display:flex;
-    align-items:stretch;
-    justify-content:center;
-    padding:0;
-  }
-  .stage{
-    width:100%;
-    height:100%;
-    display:flex;
-    align-items:stretch;
-    justify-content:center;
-  }
-
-  /* ---- full-screen app frame ---- */
-  .phone{
-    width:100%;
-    height:100%;
-    max-width:560px;
-    background:var(--bg-deep);
-    border-radius:0;
-    border:none;
-    box-shadow:none;
-    position:relative;
-    overflow:hidden;
-    flex-shrink:0;
-    margin:0 auto;
-  }
-  .notch{display:none;}
-  .screen{
-    position:absolute; inset:0;
-    display:flex;
-    flex-direction:column;
-    padding-top:14px;
-  }
-  .statusbar{
-    display:flex; justify-content:space-between; align-items:center;
-    padding:6px 26px 4px;
-    font-family:"Manrope",sans-serif;
-    font-weight:700;
-    font-size:14px;
-    color:var(--text-hi);
-    flex-shrink:0;
-  }
-
-  .view{
-    flex:1;
-    overflow-y:auto;
-    padding:6px 20px 100px;
-    display:none;
-    -webkit-overflow-scrolling:touch;
-  }
-  .view.active{display:block;}
-  .view::-webkit-scrollbar{display:none;}
-
-  .app-header{
-    display:flex; align-items:center; justify-content:space-between;
-    margin:10px 0 18px;
-  }
-  .app-header .greet{
-    font-size:12.5px;
-    color:var(--text-low);
-    margin-bottom:3px;
-    font-weight:500;
-  }
-  .app-header h2{
-    margin:0;
-    font-size:21px;
-    font-weight:800;
-    letter-spacing:-0.01em;
-  }
-  .avatar{
-    width:38px;height:38px;border-radius:50%;
-    background:linear-gradient(135deg,var(--accent),#FF7A5C);
-    display:flex;align-items:center;justify-content:center;
-    font-weight:800;color:#1a1200;font-size:14px;
-    flex-shrink:0;
-  }
-  .mascot-avatar{
-    width:52px;height:52px;border-radius:50%;
-    background:var(--bg-card-2);
-    border:1px solid var(--stroke);
-    display:flex;align-items:center;justify-content:center;
-    flex-shrink:0;
-    margin-right:12px;
-  }
-  .online-dot{
-    width:7px;height:7px;border-radius:50%;
-    background:var(--teal);
-    display:inline-block;
-    box-shadow:0 0 0 3px var(--teal-soft);
-  }
-
-  /* Radar card */
-  .radar-card{
-    background:radial-gradient(circle at 20% 0%, #2A2340 0%, var(--bg-card) 55%);
-    border:1px solid var(--stroke);
-    border-radius:var(--radius-lg);
-    padding:22px 20px 20px;
-    position:relative;
-    overflow:hidden;
-    margin-bottom:16px;
-  }
-  :root[data-theme="light"] .radar-card{
-    background:radial-gradient(circle at 20% 0%, #E9E4FF 0%, var(--bg-card) 60%);
-  }
-  .radar-card .pulse{
-    position:absolute; top:-30px; right:-30px;
-    width:140px;height:140px;border-radius:50%;
-    background:radial-gradient(circle,var(--teal-soft),transparent 70%);
-  }
-  .radar-tag{
-    display:inline-flex; align-items:center; gap:6px;
-    font-size:11.5px; font-weight:700; color:var(--teal);
-    background:var(--teal-soft);
-    padding:4px 10px; border-radius:999px;
-    margin-bottom:14px;
-    font-family:"Manrope",sans-serif;
-  }
-  .radar-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:blink 1.6s infinite;}
-  @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.25;}}
-  .radar-line{
-    font-size:19px;
-    font-weight:700;
-    line-height:1.55;
-    margin:0 0 16px;
-    position:relative;
-    z-index:2;
-  }
-  .radar-meta{
-    display:flex; gap:10px; margin-bottom:18px; position:relative; z-index:2;
-  }
-  .meta-chip{
-    flex:1;
-    background:var(--bg-card-2);
-    border-radius:var(--radius-sm);
-    padding:10px 12px;
-    border:1px solid var(--stroke);
-  }
-  .meta-chip .num{font-family:"Manrope",sans-serif;font-weight:800;font-size:16px;}
-  .meta-chip .lbl{font-size:11px;color:var(--text-low);margin-top:2px;}
-  .cta-row{display:flex;gap:10px;position:relative;z-index:2;}
-  .btn{
-    border:none; cursor:pointer;
-    font-family:"Noto Sans TC",sans-serif;
-    font-weight:700;
-    border-radius:999px;
-    padding:13px 18px;
-    font-size:14.5px;
-    transition:transform .15s ease, opacity .15s ease;
-  }
-  .btn:active{transform:scale(0.96);}
-  .btn-primary{background:var(--accent);color:#241800;flex:1;}
-  .btn-ghost{background:var(--bg-card-2);color:var(--text-hi);border:1px solid var(--stroke);}
-
-  .section-title{
-    font-size:13px; font-weight:700; color:var(--text-low);
-    margin:22px 0 10px;
-  }
-  .timeline{
-    display:flex; gap:10px; overflow-x:auto; padding-bottom:6px; margin:0 -20px; padding-left:20px; padding-right:20px;
-  }
-  .timeline::-webkit-scrollbar{display:none;}
-  .tslot{
-    flex:0 0 auto; width:64px;
-    background:var(--bg-card);
-    border:1px solid var(--stroke);
-    border-radius:16px;
-    padding:12px 0;
-    text-align:center;
-  }
-  .tslot.now{border-color:var(--accent); background:var(--accent-soft);}
-  .tslot .t{font-size:11px;color:var(--text-low);margin-bottom:6px;}
-  .tslot .ic{font-size:18px;margin-bottom:6px;}
-  .tslot .v{font-size:12px;font-weight:700;}
-
-  .info-card{
-    background:var(--bg-card);
-    border:1px solid var(--stroke);
-    border-radius:var(--radius-md);
-    padding:16px;
-    display:flex;
-    align-items:flex-start;
-    gap:12px;
-    margin-bottom:10px;
-  }
-  .info-card .ic-wrap{
-    width:38px;height:38px;border-radius:11px;
-    background:var(--bg-card-2);
-    display:flex;align-items:center;justify-content:center;
-    font-size:17px; flex-shrink:0;
-  }
-  .info-card .title{font-weight:700;font-size:14.5px;margin-bottom:3px;}
-  .info-card .desc{font-size:12.5px;color:var(--text-mid);line-height:1.5;}
-
-  /* Quest view */
-  .points-card{
-    background:linear-gradient(135deg, var(--bg-card-2), var(--bg-card));
-    border:1px solid var(--stroke);
-    border-radius:var(--radius-lg);
-    padding:20px;
-    margin-bottom:18px;
-  }
-  .points-top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px;}
-  .points-top .num{font-family:"Manrope",sans-serif;font-size:30px;font-weight:800;color:var(--accent);}
-  .points-top .lbl{font-size:12px;color:var(--text-low);}
-  .bar-track{height:8px;border-radius:99px;background:var(--bg-void);overflow:hidden;}
-  :root[data-theme="light"] .bar-track{background:#E4E6F0;}
-  .bar-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--accent));border-radius:99px;transition:width .5s ease;}
-  .points-note{font-size:11.5px;color:var(--text-low);margin-top:8px;}
-
-  .quest-item{
-    display:flex; align-items:center; gap:12px;
-    background:var(--bg-card);
-    border:1px solid var(--stroke);
-    border-radius:var(--radius-md);
-    padding:14px;
-    margin-bottom:10px;
-    cursor:pointer;
-    user-select:none;
-    transition:opacity .2s ease;
-  }
-  .quest-item.done{opacity:0.5;}
-  .quest-check{
-    width:24px;height:24px;border-radius:50%;
-    border:2px solid var(--text-low);
-    display:flex;align-items:center;justify-content:center;
-    flex-shrink:0;
-    font-size:13px;color:transparent;
-    transition:all .2s ease;
-  }
-  .quest-item.done .quest-check{background:var(--teal);border-color:var(--teal);color:#04201a;}
-  .quest-body .title{font-weight:700;font-size:14px;margin-bottom:2px;}
-  .quest-item.done .quest-body .title{text-decoration:line-through;}
-  .quest-body .desc{font-size:12px;color:var(--text-low);}
-  .quest-pt{
-    margin-left:auto;font-family:"Manrope",sans-serif;font-weight:800;font-size:13px;color:var(--accent);flex-shrink:0;
-  }
-
-  .wrap-card{
-    background:radial-gradient(circle at 100% 0%, var(--accent-soft), var(--bg-card) 60%);
-    border:1px solid var(--stroke);
-    border-radius:var(--radius-lg);
-    padding:20px;
-  }
-  .wrap-card h3{margin:0 0 4px;font-size:15px;font-weight:800;}
-  .wrap-card .sub{font-size:12px;color:var(--text-low);margin-bottom:16px;}
-  .wrap-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
-  .wrap-stat .num{font-family:"Manrope",sans-serif;font-weight:800;font-size:20px;}
-  .wrap-stat .lbl{font-size:11px;color:var(--text-low);margin-top:2px;}
-
-  /* Assistant */
-  .chat-wrap{display:flex;flex-direction:column;height:100%;}
-  .chat-log{flex:1;overflow-y:auto;padding:4px 0 12px;}
-  .msg{max-width:80%;padding:11px 14px;border-radius:16px;font-size:13.5px;line-height:1.55;margin-bottom:10px;}
-  .msg.bot{background:var(--bg-card);border:1px solid var(--stroke);border-bottom-left-radius:4px;}
-  .msg.user{background:var(--accent);color:#241800;font-weight:600;margin-left:auto;border-bottom-right-radius:4px;}
-  .typing{display:inline-flex;gap:4px;padding:4px 0;}
-  .typing span{width:6px;height:6px;border-radius:50%;background:var(--text-low);animation:tbounce 1s infinite;}
-  .typing span:nth-child(2){animation-delay:.15s;}
-  .typing span:nth-child(3){animation-delay:.3s;}
-  @keyframes tbounce{0%,60%,100%{transform:translateY(0);opacity:.4;}30%{transform:translateY(-4px);opacity:1;}}
-  .quick-replies{display:flex;flex-wrap:wrap;gap:8px;padding:10px 0 4px;}
-  .qr-btn{
-    background:var(--bg-card-2);
-    border:1px solid var(--stroke);
-    color:var(--text-hi);
-    font-size:12.5px;
-    padding:9px 13px;
-    border-radius:999px;
-    cursor:pointer;
-    font-family:"Noto Sans TC",sans-serif;
-  }
-  .qr-btn:active{transform:scale(0.96);}
-
-  /* bottom nav */
-  .navbar{
-    position:absolute; left:0; right:0; bottom:0;
-    background:var(--bg-deep);
-    border-top:1px solid var(--stroke);
-    display:flex;
-    padding:10px 10px 18px;
-    z-index:40;
-  }
-  .navbtn{
-    flex:1; background:none; border:none; cursor:pointer;
-    display:flex; flex-direction:column; align-items:center; gap:4px;
-    color:var(--text-low);
-    font-family:"Noto Sans TC",sans-serif;
-    font-size:10.5px;
-    font-weight:600;
-    padding:4px 0;
-  }
-  .navbtn .ic{font-size:19px;}
-  .navbtn.active{color:var(--accent);}
-
-  .toast{
-    position:absolute; left:50%; bottom:96px; transform:translateX(-50%) translateY(20px);
-    background:var(--text-hi); color:var(--bg-void);
-    padding:10px 18px; border-radius:999px;
-    font-size:12.5px; font-weight:700;
-    opacity:0; transition:all .3s ease;
-    z-index:60; white-space:nowrap;
-    pointer-events:none;
-  }
-  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
-
-  .theme-toggle{
-    position:fixed; top:14px; right:16px;
-    background:var(--bg-card); border:1px solid var(--stroke);
-    color:var(--text-hi); border-radius:999px;
-    padding:6px 12px; font-size:11.5px; cursor:pointer;
-    font-family:"Manrope",sans-serif; font-weight:700;
-    z-index:100;
-    opacity:0.85;
-  }
-
-  @media (max-width:600px){
-    .phone{max-width:100%;}
-  }
+:root{--pg:#e9edf4;--pn:#fff;--ln:#d6deec;--tx:#0f172a;--mt:#5b6781;--red:#E60012;--soft:#eef2f9;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--pg:#080d1a;--pn:#0f172a;--ln:#1e293b;--tx:#e2e8f0;--mt:#94a3b8;--soft:#1a2338}}
+:root[data-theme="dark"]{--pg:#080d1a;--pn:#0f172a;--ln:#1e293b;--tx:#e2e8f0;--mt:#94a3b8;--soft:#1a2338}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--pg);color:var(--tx);font-family:"Noto Sans TC",-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;font-size:14px}
+.shell{display:flex;min-height:100%;gap:0}
+aside{width:380px;background:var(--pn);border-right:1px solid var(--ln);padding:14px;overflow-y:auto;height:100vh;position:sticky;top:0}
+main{flex:1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+h2{font-size:11px;letter-spacing:.08em;color:var(--mt);margin:14px 0 8px;text-transform:uppercase}
+.brand{display:flex;gap:10px;align-items:center}
+.logo{width:34px;height:34px;border-radius:9px;background:var(--red);color:#fff;font-weight:900;display:grid;place-items:center;font-size:18px}
+.brand b{font-size:15px}.brand small{display:block;color:var(--mt);font-size:11px}
+.scs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.scb{background:var(--soft);border:1px solid var(--ln);color:var(--tx);border-radius:11px;padding:9px;text-align:left;cursor:pointer;font:inherit;font-size:12px}
+.scb.on{border-color:var(--red);background:rgba(230,0,18,.1)}
+.scb small{display:block;color:var(--mt);font-size:10px;margin-top:2px}
+.eng{background:var(--soft);border:1px solid var(--ln);border-radius:11px;padding:10px;margin-bottom:8px;font-size:12px}
+.eng h3{margin:0 0 6px;font-size:12px;display:flex;justify-content:space-between}
+.eng h3 span{font-weight:400;font-size:10px;color:var(--mt)}
+.kv{display:flex;justify-content:space-between;padding:2px 0;color:var(--mt)}.kv b{color:var(--tx);font-weight:500}
+.mb{height:6px;border-radius:9px;background:var(--ln);overflow:hidden;margin:3px 0 5px}.mb i{display:block;height:100%;transition:width .4s}
+.code{font:11px/1.5 ui-monospace,Menlo,monospace;background:var(--pg);border-radius:8px;padding:8px;white-space:pre-wrap;word-break:break-all}
+.log{max-height:130px;overflow-y:auto;font:11px/1.6 ui-monospace,Menlo,monospace;color:var(--mt)}
+/* phone */
+#phone{width:100%;max-width:390px;height:min(800px,calc(100vh - 32px));background:#0f172a;color:#e2e8f0;border:10px solid #1e293b;border-radius:46px;overflow:hidden;display:flex;flex-direction:column;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.stat{display:flex;justify-content:space-between;padding:10px 22px 6px;font-size:12px;font-weight:700}
+.hdr{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid #1e293b}
+.hdr .lg{display:flex;align-items:center;gap:7px;font-weight:700}
+.hdr .lg i{width:26px;height:26px;border-radius:50%;background:var(--red);display:grid;place-items:center;font-style:normal;font-weight:900;font-size:13px;color:#fff}
+.tag{font-size:10px;background:rgba(230,0,18,.2);color:#ff6b75;border:1px solid rgba(230,0,18,.35);border-radius:5px;padding:1px 5px}
+.pill{background:#1e293b;border-radius:99px;padding:4px 9px;font-size:11px}
+.scr{flex:1;overflow-y:auto;padding:12px}
+.nv{display:flex;border-top:1px solid #1e293b;background:#0f172a}
+.nv button{flex:1;background:none;border:0;color:#94a3b8;padding:9px 0 11px;font:inherit;font-size:10px;cursor:pointer}
+.nv button.on{color:#ff4b57;font-weight:700}.nv button span{display:block;font-size:17px}
+.note{background:linear-gradient(120deg,#1e293b,#172036);border:1px solid rgba(230,0,18,.45);border-radius:15px;padding:11px;display:flex;gap:9px;margin-bottom:10px;animation:up .4s}
+.note b{font-size:12px}.note p{margin:3px 0 0;font-size:11px;color:#cbd5e1;line-height:1.5}
+.note button{margin-left:auto;background:none;border:0;color:#64748b;cursor:pointer;align-self:flex-start}
+@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.cta{background:var(--red);border-radius:13px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;font-weight:700}
+.cta button{background:#fff;color:var(--red);border:0;border-radius:9px;padding:7px 10px;font-weight:800;cursor:pointer;font-size:12px;white-space:nowrap}
+.rad{background:#162038;border:1px solid #27334f;border-radius:15px;padding:11px;margin-bottom:10px}
+.rad .tt{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:8px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;text-align:center;font-size:10px}
+.g3 div{background:#0b1220;border-radius:10px;padding:7px 3px;color:#94a3b8}.g3 b{display:block;color:#e2e8f0;font-size:12px;margin-top:2px}
+.sh{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;margin:4px 2px 7px}
+.sh span{font-size:10px;font-weight:400;color:#fbbf24;background:rgba(251,191,36,.12);padding:1px 6px;border-radius:5px}
+.sc{background:#162038;border:1px solid #27334f;border-radius:15px;padding:11px;margin-bottom:8px;cursor:pointer;position:relative;overflow:hidden}
+.sc.on{border-color:var(--red);box-shadow:0 0 0 1px var(--red)}
+.sc .r{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.rt{font-size:10px;color:#fbbf24}
+.mu{margin:2px 0 0;font-size:11px;color:#94a3b8}
+.r2{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:7px;border-top:1px solid #27334f;font-size:11px;color:#cbd5e1}
+.rs{margin:7px 0 0;background:#0b1220;border-radius:8px;padding:5px 8px;font-size:10px;color:#cbd5e1;line-height:1.5}.rs em{color:#fbbf24;font-style:normal;float:right}
+.sur{position:absolute;top:0;right:0;background:linear-gradient(90deg,#f97316,var(--red));font-style:normal;font-size:9px;font-weight:800;padding:2px 8px;border-bottom-left-radius:9px}
+.bd{font-size:10px;padding:1px 7px;border-radius:6px;border:1px solid}
+.b0{color:#fcd34d;border-color:rgba(252,211,77,.4);background:rgba(252,211,77,.12)}
+.b1{color:#6ee7b7;border-color:rgba(110,231,183,.4);background:rgba(110,231,183,.12)}
+.b2{color:#fde68a;border-color:rgba(253,230,138,.4);background:rgba(253,230,138,.1)}
+.b3{color:#fca5a5;border-color:rgba(252,165,165,.4);background:rgba(252,165,165,.12)}
+.dec{background:#1b2640;border:1px solid #334266;border-radius:15px;padding:12px;margin:12px 0;animation:up .3s}
+.dec h4{margin:0 0 8px;font-size:12px}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cb{background:#0b1220;border:1px solid #27334f;border-radius:11px;padding:9px;font-size:11px;color:#94a3b8;position:relative}
+.cb b{display:block;font-size:17px;color:#e2e8f0;margin:3px 0}.cb small{display:block;line-height:1.4}
+.cb.hi{border-color:rgba(230,0,18,.7);background:linear-gradient(#2a1319,#0b1220)}
+.cb em{position:absolute;top:8px;right:9px;font-style:normal;color:#fcd34d;font-weight:700}
+.vd{margin:9px 0;font-size:11px;color:#a7f3d0;text-align:center}
+.bt{display:flex;gap:7px;margin-top:6px}
+.btn{flex:1;border:0;border-radius:10px;padding:10px 6px;font:inherit;font-weight:700;font-size:12px;cursor:pointer;background:#27334f;color:#e2e8f0}
+.btn.p{background:var(--red);color:#fff;flex:1.6}
+.btn:active{transform:scale(.97)}
+.cnf{font-size:10px;color:#94a3b8;text-align:center;margin-top:8px}
+.ov{position:absolute;inset:0;background:rgba(2,6,16,.96);z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;animation:up .3s}
+.rdr{width:96px;height:96px;border-radius:50%;background:rgba(230,0,18,.2);border:1px solid rgba(230,0,18,.45);display:grid;place-items:center;font-size:38px;animation:pl 1.8s infinite}
+@keyframes pl{50%{transform:scale(1.1);opacity:.55}}
+.ov .box{width:100%;background:#0f172a;border:1px solid #1e293b;border-radius:15px;padding:12px;margin:16px 0;font-size:12px;text-align:left}
+.pg{height:6px;border-radius:9px;background:#1e293b;overflow:hidden;margin-top:6px}.pg i{display:block;height:100%;background:#34d399;transition:width 2.4s linear}
+.card{background:#162038;border:1px solid #27334f;border-radius:15px;padding:12px;margin-bottom:10px}
+.card h4{margin:0 0 6px;font-size:13px}.card p{margin:0;font-size:11px;color:#94a3b8;line-height:1.6}
+.tg{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-top:1px solid #27334f;font-size:12px}
+.tg:first-of-type{border-top:0}.tg small{display:block;color:#94a3b8;font-size:10px}
+.tg input[type=checkbox]{accent-color:var(--red);width:20px;height:20px}
+.tg input[type=range]{accent-color:var(--red);width:120px}
+.kp{font-size:26px;font-weight:900;margin:2px 0}
+.fb{width:100%;display:flex;gap:8px}
+.fab{display:none}
+@media (max-width:900px){
+ .shell{flex-direction:column}aside{width:100%;height:auto;position:static;border-right:0;border-top:1px solid var(--ln)}
+ main{padding:0}#phone{max-width:none;height:100dvh;border:0;border-radius:0}
+ .fab{display:block;position:fixed;right:12px;bottom:calc(74px + env(safe-area-inset-bottom,0px));z-index:20;background:var(--red);color:#fff;border:0;border-radius:99px;padding:9px 14px;font:inherit;font-weight:700;font-size:12px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+ .stat{padding-top:calc(8px + env(safe-area-inset-top,0px))}
+}
 </style>
 </head>
 <body>
-
-<button class="theme-toggle" id="themeToggle" type="button">🌙 深色</button>
-
-<div class="stage">
-  <div class="phone">
-    <div class="notch"></div>
-    <div class="screen">
-      <div class="statusbar">
-        <span id="clock">9:41</span>
-        <span>●●●●  📶  🔋</span>
-      </div>
-
-      <!-- RADAR VIEW -->
-      <section class="view active" id="view-radar">
-        <div class="app-header">
-          <div>
-            <div class="greet">早安，內湖的你</div>
-            <h2>今日出發雷達</h2>
-          </div>
-          <div class="avatar">王</div>
-        </div>
-
-        <div class="radar-card">
-          <div class="pulse"></div>
-          <span class="radar-tag"><span class="dot"></span>即時情境更新中</span>
-          <p class="radar-line">忠孝東路陣雨機率 70%，建議提前 10 分鐘出門；常搭路線現在等待約 3 分鐘。</p>
-          <div class="radar-meta">
-            <div class="meta-chip"><div class="num">70%</div><div class="lbl">降雨機率</div></div>
-            <div class="meta-chip"><div class="num">3 分</div><div class="lbl">預估等待</div></div>
-            <div class="meta-chip"><div class="num">中等</div><div class="lbl">路況壅塞</div></div>
-          </div>
-          <div class="cta-row">
-            <button class="btn btn-primary" onclick="showToast('已為你保留車輛，出發前會再提醒 🚗')">先幫我留車</button>
-            <button class="btn btn-ghost" onclick="showToast('已延後 10 分鐘提醒')">稍後提醒</button>
-          </div>
-        </div>
-
-        <div class="section-title">未來 3 小時</div>
-        <div class="timeline">
-          <div class="tslot now"><div class="t">現在</div><div class="ic">🌦️</div><div class="v">3分</div></div>
-          <div class="tslot"><div class="t">08:30</div><div class="ic">🌧️</div><div class="v">6分</div></div>
-          <div class="tslot"><div class="t">09:00</div><div class="ic">🌧️</div><div class="v">9分</div></div>
-          <div class="tslot"><div class="t">09:30</div><div class="ic">⛅</div><div class="v">4分</div></div>
-          <div class="tslot"><div class="t">10:00</div><div class="ic">☀️</div><div class="v">2分</div></div>
-        </div>
-
-        <div class="section-title">為什麼是現在</div>
-        <div class="info-card">
-          <div class="ic-wrap">📍</div>
-          <div>
-            <div class="title">個人常用路線</div>
-            <div class="desc">依你過去 30 天的通勤紀錄，學習你的出發時間與慣用路線。</div>
-          </div>
-        </div>
-        <div class="info-card">
-          <div class="ic-wrap">🌧️</div>
-          <div>
-            <div class="title">氣象署即時資料</div>
-            <div class="desc">結合天氣與供需資料，判斷是否該提早出門或先叫車。</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- QUEST VIEW -->
-      <section class="view" id="view-quest">
-        <div class="app-header">
-          <div>
-            <div class="greet">城市任務</div>
-            <h2>本週移動足跡</h2>
-          </div>
-          <div class="avatar">王</div>
-        </div>
-
-        <div class="points-card">
-          <div class="points-top">
-            <div><div class="num" id="ptNum">340</div><div class="lbl">本月任務點數</div></div>
-            <div class="lbl">下一階段 500</div>
-          </div>
-          <div class="bar-track"><div class="bar-fill" id="ptBar" style="width:68%"></div></div>
-          <div class="points-note">再完成 2 項任務即可兌換異業咖啡優惠券</div>
-        </div>
-
-        <div class="section-title">進行中任務</div>
-        <div class="quest-item" data-pt="40" onclick="toggleQuest(this)">
-          <div class="quest-check">✓</div>
-          <div class="quest-body"><div class="title">非通勤時段搭乘一次</div><div class="desc">週末或平日離峰完成一趟叫車</div></div>
-          <div class="quest-pt">+40</div>
-        </div>
-        <div class="quest-item done" data-pt="20" onclick="toggleQuest(this)">
-          <div class="quest-check">✓</div>
-          <div class="quest-body"><div class="title">連續 3 天打開雷達</div><div class="desc">養成每天看一眼出行建議的習慣</div></div>
-          <div class="quest-pt">+20</div>
-        </div>
-        <div class="quest-item" data-pt="60" onclick="toggleQuest(this)">
-          <div class="quest-check">✓</div>
-          <div class="quest-body"><div class="title">體驗一次電動車隊</div><div class="desc">選擇 n7 電動車完成一趟行程</div></div>
-          <div class="quest-pt">+60</div>
-        </div>
-        <div class="quest-item" data-pt="30" onclick="toggleQuest(this)">
-          <div class="quest-check">✓</div>
-          <div class="quest-body"><div class="title">分享本月移動回顧</div><div class="desc">將移動足跡卡片分享到社群</div></div>
-          <div class="quest-pt">+30</div>
-        </div>
-
-        <div class="section-title">本月移動回顧</div>
-        <div class="wrap-card">
-          <h3>你的九月足跡</h3>
-          <div class="sub">生成專屬可分享卡片</div>
-          <div class="wrap-grid">
-            <div class="wrap-stat"><div class="num">128 km</div><div class="lbl">本月移動距離</div></div>
-            <div class="wrap-stat"><div class="num">6.4 kg</div><div class="lbl">減碳量</div></div>
-            <div class="wrap-stat"><div class="num">內湖</div><div class="lbl">最常出沒地點</div></div>
-            <div class="wrap-stat"><div class="num">14 次</div><div class="lbl">雷達提醒採用</div></div>
-          </div>
-          <button class="btn btn-primary" style="width:100%" onclick="showToast('回顧卡片已儲存到相簿 🖼️')">分享我的移動回顧</button>
-        </div>
-      </section>
-
-      <!-- ASSISTANT VIEW -->
-      <section class="view" id="view-chat">
-        <div class="chat-wrap">
-          <div class="app-header" style="margin-bottom:10px;">
-            <div class="mascot-avatar" aria-hidden="true">
-              <svg viewBox="0 0 64 64" width="42" height="42">
-                <circle cx="32" cy="36" r="22" fill="url(#g1)"/>
-                <line x1="32" y1="14" x2="32" y2="4" stroke="#F4F5F8" stroke-width="2.5" stroke-linecap="round"/>
-                <circle cx="32" cy="4" r="4" fill="#FFB03B"/>
-                <circle cx="24" cy="34" r="3.2" fill="#0B0D14"/>
-                <circle cx="40" cy="34" r="3.2" fill="#0B0D14"/>
-                <path d="M23 44 Q32 51 41 44" stroke="#0B0D14" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-                <defs>
-                  <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#7CF2D6"/>
-                    <stop offset="100%" stop-color="#3FB6A8"/>
-                  </linearGradient>
-                </defs>
-              </svg>
-            </div>
-            <div style="flex:1;">
-              <div class="greet" style="display:flex;align-items:center;gap:6px;">
-                達達 <span class="online-dot"></span> 在線上
-              </div>
-              <h2 style="font-size:18px;">你的城市移動搭子 📡</h2>
-            </div>
-          </div>
-          <div class="chat-log" id="chatLog">
-            <div class="msg bot">嗨嗨，我是達達 👋 你的專屬城市雷達！哪裡好叫車、路況怎樣、附近有什麼優惠，儘管問我，我盡量講人話，不打官腔～</div>
-          </div>
-          <div class="quick-replies" id="quickReplies">
-            <button class="qr-btn" onclick="askBot('信義區現在好叫車嗎？')">信義區現在好叫車嗎？</button>
-            <button class="qr-btn" onclick="askBot('晚點會塞車嗎？')">晚點會塞車嗎？</button>
-            <button class="qr-btn" onclick="askBot('附近有什麼優惠？')">附近有什麼優惠？</button>
-          </div>
-        </div>
-      </section>
-
-      <div class="toast" id="toast"></div>
-
-      <nav class="navbar">
-        <button class="navbtn active" data-view="radar" onclick="switchView('radar')">
-          <span class="ic">📡</span>每日雷達
-        </button>
-        <button class="navbtn" data-view="quest" onclick="switchView('quest')">
-          <span class="ic">🏙️</span>城市任務
-        </button>
-        <button class="navbtn" data-view="chat" onclick="switchView('chat')">
-          <span class="ic">💬</span>問達達
-        </button>
-      </nav>
-    </div>
-  </div>
+<div class="shell">
+<main><div id="phone"></div></main>
 </div>
-
 <script>
-  // ---- theme toggle (per-viewer convenience only) ----
-  const themeBtn = document.getElementById('themeToggle');
-  function applyTheme(t){
-    if(t==='light'){ document.documentElement.setAttribute('data-theme','light'); themeBtn.textContent='☀️ 淺色'; }
-    else { document.documentElement.setAttribute('data-theme','dark'); themeBtn.textContent='🌙 深色'; }
-  }
-  let currentTheme = 'dark';
-  try{
-    const saved = localStorage.getItem('yoxi_theme');
-    if(saved) currentTheme = saved;
-  }catch(e){}
-  applyTheme(currentTheme);
-  themeBtn.addEventListener('click', () => {
-    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    applyTheme(currentTheme);
-    try{ localStorage.setItem('yoxi_theme', currentTheme); }catch(e){}
-  });
-
-  // ---- clock ----
-  function tickClock(){
-    const d = new Date();
-    const h = d.getHours().toString().padStart(2,'0');
-    const m = d.getMinutes().toString().padStart(2,'0');
-    document.getElementById('clock').textContent = h+':'+m;
-  }
-  tickClock(); setInterval(tickClock, 15000);
-
-  // ---- nav switching ----
-  function switchView(name){
-    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-    document.getElementById('view-'+name).classList.add('active');
-    document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active', b.dataset.view===name));
-  }
-
-  // ---- toast ----
-  let toastTimer;
-  function showToast(msg){
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
-  }
-
-  // ---- quest points (in-memory, per-viewer via localStorage) ----
-  let points = 340;
-  try{
-    const saved = localStorage.getItem('yoxi_points');
-    if(saved) points = parseInt(saved,10);
-  }catch(e){}
-  function renderPoints(){
-    document.getElementById('ptNum').textContent = points;
-    const pct = Math.min(100, Math.round((points/500)*100));
-    document.getElementById('ptBar').style.width = pct+'%';
-  }
-  renderPoints();
-
-  function toggleQuest(el){
-    const wasDone = el.classList.contains('done');
-    const pt = parseInt(el.dataset.pt,10);
-    el.classList.toggle('done');
-    points += wasDone ? -pt : pt;
-    if(points<0) points = 0;
-    renderPoints();
-    try{ localStorage.setItem('yoxi_points', points); }catch(e){}
-    if(!wasDone) showToast('任務完成！+'+pt+' 點數 🎉');
-  }
-
-  // ---- chatbot (canned demo answers) ----
-  const answers = {
-    '信義區現在好叫車嗎？': '信義區現在有點搶手，等待大概 8 分鐘 😅 偷偷跟你說，走到仁愛路那邊等車，3 分鐘就有車囉，要幫你導航過去嗎？',
-    '晚點會塞車嗎？': '下午 5 點後忠孝東路會開始塞唷，車速大概慢 3 成。建議提前或晚個 30 分鐘出門，我到時候會再提醒你的！',
-    '附近有什麼優惠？': '你最近很常在內湖出沒耶～這週剛好有異業咖啡券可以用任務點數換，電動車隊 n7 首搭也有折扣，要我幫你留一張嗎？'
-  };
-  function askBot(q){
-    const log = document.getElementById('chatLog');
-    const userMsg = document.createElement('div');
-    userMsg.className = 'msg user';
-    userMsg.textContent = q;
-    log.appendChild(userMsg);
-    log.scrollTop = log.scrollHeight;
-
-    const typing = document.createElement('div');
-    typing.className = 'msg bot';
-    typing.innerHTML = '<span class="typing"><span></span><span></span><span></span></span>';
-    log.appendChild(typing);
-    log.scrollTop = log.scrollHeight;
-
-    setTimeout(()=>{
-      typing.textContent = answers[q] || '這題有點難倒達達了 😳 我還在學習中，之後會串接更多城市資料來回答你！';
-      log.scrollTop = log.scrollHeight;
-    }, 900);
-  }
+var P=function(title,cu,price,rt,walk,drive,park,lo,hi,fare,reason,sur,match){return{title:title,cu:cu,price:price,rt:rt,walk:walk,drive:drive,park:park,lo:lo,hi:hi,fare:fare,reason:reason,sur:sur,match:match}};
+var S=[
+{n:"平日午餐 MVP",i:"🍱",t:"11:15",loc:"信義區",win:"60–90 分",wx:"晴 26°C",tr:"順暢",pk:"困難",int:45,
+ pt:"午餐時間充裕,要不要吃遠一點?",pb:"3 家精選餐廳已評估車程與停車難度,最遠車程只要 9 分鐘。",cta:"",
+ sp:[P("大戶屋定食 信義店","日式定食","NT$280–350",4.6,"步行 6 分",3,3,10,15,100,"符合你平日愛吃的日式定食,步行即達",0,96),
+ P("翠林越式餐廳","越式河粉／簡餐","NT$180–250",4.5,"步行 8 分",4,2,5,8,110,"清爽快速,步行距離剛好",0,89),
+ P("三味韓式燒肉名家","韓式燒肉定食","NT$320–450",4.8,"步行 22 分",9,3,12,18,135,"只突破距離一項:搭車 9 分鐘直達,免找車位",1,74)]},
+{n:"突發暴雨",i:"🌧️",t:"17:45",loc:"南港軟體園區",win:"即時前往",wx:"大雨 18°C",tr:"壅塞",pk:"困難",int:88,
+ pt:"外頭下大雨,返家免淋雨方案",pb:"偵測到降雨量上升與捷運排隊人潮,附近已有 yoxi 司機整備。",cta:"雨勢加大,門口上車免淋雨",
+ sp:[P("返回家中(南港→市政府)","接送返家","—",5,"步行淋雨 15 分",14,3,15,20,185,"雨勢加大,由大樓門口直接上車",0,93),
+ P("Citylink 美食街","室內避雨商場","NT$200–500",4.7,"步行 12 分",5,2,6,10,110,"乾爽室內,避開下班車潮",0,88),
+ P("松菸誠品食堂","文青晚餐","NT$350–600",4.9,"步行 40 分",12,3,10,14,160,"受控驚喜:雨天專車直達,不必找車位",1,71)]},
+{n:"深夜酒吧",i:"🍸",t:"23:30",loc:"大安區",win:"深夜放鬆",wx:"涼爽 21°C",tr:"順暢",pk:"不建議開車",int:95,
+ pt:"聚會結束,安心回家",pb:"偵測到酒吧與餐酒館密集區,飲酒請勿開車。",cta:"飲酒不開車,一鍵安心返家",
+ sp:[P("Draft Land 忠孝店","雞尾酒／輕食","NT$300–600",4.8,"步行 5 分",2,0,0,0,100,"熱門續攤酒吧,建議搭車前往",0,91),
+ P("返回家中(大安→板橋)","安心夜歸","—",5,"捷運已停駛",18,0,0,0,260,"末班車已過,專車直達家門口",0,95),
+ P("貓空夜景茶館","夜景／宵夜","NT$300",4.7,"距離遠",22,0,0,0,380,"深夜驚喜:來一趟夜景 Micro Trip",1,68)]},
+{n:"大巨蛋散場",i:"🎤",t:"22:15",loc:"大巨蛋周邊",win:"離場避峰",wx:"陰 24°C",tr:"高度壅塞",pk:"困難",int:92,
+ pt:"演出結束,避開人潮離場",pb:"周邊約 4 萬人散場,已開啟 yoxi 專屬上車點。",cta:"散場尖峰,錯峰預約專屬上車點",
+ sp:[P("前往台北車站","跨城交通","—",4.9,"捷運排隊 40 分",12,3,20,28,170,"避開捷運人潮,光復南路專屬上車點",0,92),
+ P("通化街夜市宵夜","在地宵夜","NT$100–250",4.6,"步行 25 分",7,3,12,18,120,"演出後補充體力,短程接送",0,85),
+ P("美麗華摩天輪夜景","宵夜／約會","NT$400",4.8,"步行 50 分",14,2,4,8,210,"受控驚喜:離場不急著回家",1,70)]}];
+var SURL=["小幅(距離 +3 分)","標準(距離或價格擇一)","大膽(兩項皆突破)"];
+var st,tm;
+function init(){st={sc:0,sel:2,tab:"radar",note:true,disp:0,logs:[],adj:{},saved:{},s:{open:1,views:0,dec:0,ride:0,cta:0,sur:0,push:1},pref:{loc:true,hist:true,sur:1,cap:2}};
+ log("CONTEXT","識別為「"+S[0].n+"」情境 ("+S[0].loc+")");log("DISCOVER","產出 2 熟悉 + 1 受控驚喜")}
+function log(k,m){st.logs.unshift("["+new Date().toTimeString().slice(0,8)+"] "+k+": "+m);st.logs=st.logs.slice(0,40)}
+function mt(sp){return Math.max(40,Math.min(99,sp.match+(st.adj[sp.title]||0)))}
+function PB(p){return['<span class="bd b0">⛔ 不可開車</span>','<span class="bd b1">🟢 容易</span>','<span class="bd b2">🟡 普通</span>','<span class="bd b3">🔴 困難</span>'][p]}
+function calc(sp){var yox=2+sp.drive;if(!sp.park)return{yox:yox,self:null,save:null};var self=Math.round(sp.drive+(sp.lo+sp.hi)/2);return{yox:yox,self:self,save:self-yox}}
+function cmp(sp){var c=calc(sp),l,v;
+ if(c.self===null){l='<div class="cb"><span>🚗 自行開車</span><b>⛔ 不建議</b><small>飲酒或夜間不建議自駕</small></div>';v="飲酒不開車,搭 yoxi 最安心"}
+ else{l='<div class="cb"><span>🚗 自行開車</span><b>約 '+c.self+' 分</b><small>行車 '+sp.drive+' + 找位 '+sp.lo+'–'+sp.hi+'(Phase 2 預估區間)</small></div>';
+  v=c.save>=8?"搭 yoxi 約省 "+c.save+" 分鐘找位時間":"兩者時間差不大,依今天的心情選擇(不硬推叫車)"}
+ return'<div class="cmp">'+l+'<div class="cb hi"><span>🚕 叫 yoxi</span><b>約 '+c.yox+' 分</b><small>等候 2 + 車程 '+sp.drive+',門口下車</small><em>NT$'+sp.fare+'</em></div></div><div class="vd">'+v+'</div>'}
+function radar(c){var h="";
+ if(st.note)h+='<div class="note"><span style="font-size:20px">✨</span><div><b>'+c.pt+' <span class="tag">Context AI</span></b><p>'+c.pb+'</p></div><button data-a="nc">✕</button></div>';
+ else if(st.s.push>=st.pref.cap)h+='<div class="note" style="border-color:#334266"><span style="font-size:18px">🔕</span><div><p>今日推播已達上限('+st.pref.cap+' 則),避免通知疲勞,以下為你主動開啟的雷達。</p></div></div>';
+ if(c.int>65)h+='<div class="cta"><span>🚨 高叫車意圖 · '+c.cta+'</span><button data-a="ride">叫 yoxi</button></div>';
+ h+='<div class="rad"><div class="tt"><span>📡 當前雷達環境判讀</span><span style="color:#94a3b8;font-weight:400">'+c.t+'</span></div><div class="g3"><div>可用時間<b style="color:#6ee7b7">'+c.win+'</b></div><div>天氣路況<b>'+c.wx.split(" ")[0]+' · '+c.tr+'</b></div><div>停車難度<b>'+c.pk+'</b></div></div></div>';
+ h+='<div class="sh"><span style="background:none;color:#e2e8f0;font-size:12px;font-weight:700;padding:0">🧭 '+c.n+'探索</span><span>2 熟悉 + 1 驚喜</span></div>';
+ c.sp.forEach(function(s,i){h+='<div class="sc'+(st.sel===i?" on":"")+'" data-a="spot" data-i="'+i+'">'+(s.sur?'<i class="sur">⚡ 受控驚喜</i>':"")+'<div class="r"><b>'+s.title+'</b><span class="rt">★'+s.rt+'</span></div><p class="mu">'+s.cu+' · '+s.price+'</p><div class="r2"><span>🚶 '+s.walk+' | 🚗 '+s.drive+' 分</span>'+PB(s.park)+'</div><p class="rs">「'+s.reason+'」<em>匹配 '+mt(s)+'%</em></p></div>'});
+ var sp=c.sp[st.sel];
+ h+='<div class="dec"><h4>🛣️ 去得了嗎?去「'+sp.title+'」</h4>'+cmp(sp)+'<div class="bt"><button class="btn" data-a="save">'+(st.saved[sp.title]?"✓ 已收藏":"☆ 收藏")+'</button><button class="btn" data-a="nav">導航</button><button class="btn p" data-a="ride">🚕 叫 yoxi · NT$'+sp.fare+'</button></div>'+
+ '<div class="bt"><button class="btn" data-a="went">我去了</button><button class="btn" data-a="skip">不太適合</button></div><div class="cnf">預估僅供參考,信心:'+(sp.park?"中":"高")+' · 你的回饋會校正下次推薦</div></div>';
+ return h}
+function tg(k,t,d,v){return'<div class="tg"><div>'+t+'<small>'+d+'</small></div><input type="checkbox" data-p="'+k+'"'+(v?" checked":"")+'></div>'}
+function pref(){var p=st.pref;
+ return'<div class="card"><h4>🔐 隱私與授權</h4><p>明確告知、可隨時退出,遵循個資法。</p>'+tg("loc","位置授權","用於判斷生活圈與步行/車程",p.loc)+tg("hist","歷史互動學習","收藏、前往、忽略用於校正推薦",p.hist)+'</div>'+
+ '<div class="card"><h4>⚡ 探索強度</h4><p>目前:'+SURL[p.sur]+'</p><div class="tg"><div>驚喜突破幅度<small>保守 ← → 大膽</small></div><input type="range" min="0" max="2" step="1" value="'+p.sur+'" data-p="sur"></div>'+
+ '<div class="tg"><div>每日推播上限<small>寧可少而準:'+p.cap+' 則</small></div><input type="range" min="1" max="3" step="1" value="'+p.cap+'" data-p="cap"></div></div>'+
+ '<div class="card"><h4>🗑️ 退出並清除</h4><p>清除本次 Demo 的學習資料並重新開始。</p><div class="bt"><button class="btn" data-a="reset">清除資料</button></div></div>'}
+function bar(l,v,t,d){var w=t?Math.min(100,Math.round(v/t*100)):0;return'<div class="card"><p>'+l+'</p><div class="kp">'+v+' <small style="font-size:12px;font-weight:400;color:#94a3b8">'+d+'</small></div><div class="pg"><i style="width:'+w+'%;transition:none"></i></div></div>'}
+function kpi(){var s=st.s,r=s.views?Math.round(s.dec/s.views*100):0,c=s.cta?Math.round(s.ride/s.cta*100):0;
+ return'<div class="card"><h4>三個北極星指標</h4><p>以下為本次操作的示意數據,實際成效以 Pilot 與 A/B 測試驗證(H1–H3)。</p></div>'+
+ bar("① 非叫車情境開啟(H1)",s.open,10,"次")+bar("② 推薦 → 收藏/導航/前往 決策率(H2)",r+"%",0,"("+s.dec+"/"+s.views+" 次點開)").replace('style="width:0%','style="width:'+r+'%')+
+ bar("③ 高意圖 CTA → 叫車轉換(H3)",c+"%",0,"("+s.ride+"/"+s.cta+" 次曝光)").replace('style="width:0%','style="width:'+c+'%')+
+ '<div class="card"><h4>學習到的偏好</h4><p>受控驚喜被點開 '+s.sur+' 次。系統依你的接受度調整下次距離/價格/類型的突破幅度。</p></div>'+
+ '<div class="card"><h4>三階段路線</h4><p><b>Phase 1 Micro Trip</b> 午餐 60–90 分,單城市 Pilot。<br><b>Phase 2 Mini Trip</b> 週末半日與高意圖場景。<br><b>Phase 3 Day Trip</b> 旅客一日遊,多語多點移動。</p></div>'}
+function ov(){if(!st.disp)return"";var sp=S[st.sc].sp[st.sel],d=st.disp,x="";
+ if(d===1)x='<h3>正在為你配對司機</h3><p style="color:#94a3b8;font-size:12px">前往 <b style="color:#fcd34d">'+sp.title+'</b></p>';
+ else if(d===2)x='<h3>司機已接單,正在趕來</h3><div class="box"><div>🚘 ABC-1234 · 王師傅 · ★4.9</div><div class="pg"><i style="width:100%"></i></div></div>';
+ else x='<h3>已抵達上車點 ✅</h3><p style="color:#94a3b8;font-size:12px">這次推薦對你有幫助嗎?</p><div class="fb" style="margin-top:14px"><button class="btn" data-a="fb1">👍 有幫助</button><button class="btn" data-a="fb0">👎 沒幫助</button></div>';
+ var bx=d===1?'<div class="box"><div class="kv" style="color:#94a3b8">預估抵達<b style="color:#6ee7b7">2 分鐘內</b></div><div class="kv" style="color:#94a3b8">預估車資<b style="color:#fff">NT$'+sp.fare+'</b></div><div class="kv" style="color:#94a3b8">路徑<b style="color:#93c5fd">已避開壅塞路段</b></div></div>':"";
+ return'<div class="ov"><div class="rdr">🚕</div><div style="height:14px"></div>'+x+bx+(d<3?'<button class="btn" style="flex:none;padding:9px 22px;border-radius:99px" data-a="cancel">取消叫車體驗</button>':"")+'</div>'}
+function sheet(){if(!st.sheet)return"";return'<div class="ov" style="justify-content:flex-end;padding:0;background:rgba(2,6,16,.7)" data-a="sheetclose"><div class="box" style="margin:0;border-radius:20px 20px 0 0;padding:16px 14px 20px"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:13px">切換地點與情境</b><button data-a="sheet" style="background:none;border:0;color:#94a3b8;font-size:18px;cursor:pointer;padding:4px 8px">✕</button></div><p style="color:#94a3b8;font-size:11px;margin:4px 0 10px">體驗不同時間地點下,雷達如何主動提供建議</p>'+S.map(function(x,i){return'<button class="btn" style="width:100%;margin-bottom:7px;text-align:left;display:block;padding:13px 12px;'+(st.sc===i?"outline:2px solid var(--red)":"")+'" data-a="sc" data-i="'+i+'">'+x.i+' '+x.n+' · '+x.t+' · '+x.loc+'</button>'}).join("")+'</div></div>'}
+function phone(){var c=S[st.sc],old=document.querySelector(".scr"),y=old?old.scrollTop:0,b=st.tab==="radar"?radar(c):st.tab==="pref"?pref():kpi();
+ document.getElementById("phone").innerHTML='<div class="stat"><span>'+c.t+'</span><span>📶 ᯤ 🔋</span></div><div class="hdr"><div class="lg"><i>y</i>yoxi <span class="tag">AI 移動雷達</span></div><span class="pill" data-a="sheet" style="cursor:pointer">📍 '+c.loc+' ▾</span></div><div class="scr">'+b+'</div>'+ov()+sheet()+
+ '<div class="nv">'+[["radar","📡","移動雷達"],["pref","🔐","偏好與隱私"]].map(function(t){return'<button data-a="tab" data-t="'+t[0]+'" class="'+(st.tab===t[0]?"on":"")+'"><span>'+t[1]+'</span>'+t[2]+'</button>'}).join("")+'</div>';
+ var n=document.querySelector(".scr");if(n)n.scrollTop=y}
+function all(){phone()}
+function pick(i){st.sc=i;st.sel=2;st.s.open++;st.tab="radar";var c=S[i];
+ if(st.s.push<st.pref.cap){st.note=true;st.s.push++;log("PUSH","「"+c.pt+"」")}else{st.note=false;log("GUARD","已達每日推播上限,略過推播(避免通知疲勞)")}
+ if(c.int>65){st.s.cta++;log("INTENT","高意圖 "+c.int+"%,顯示叫車入口")}log("CONTEXT","切換至「"+c.n+"」");all()}
+function act(a,e){var c=S[st.sc],sp=c.sp[st.sel];
+ if(a==="sheet"||a==="sheetclose"){st.sheet=!st.sheet;return phone()}
+ if(a==="sc"){st.sheet=false;return pick(+e.dataset.i)}
+ if(a==="spot"){st.sel=+e.dataset.i;st.s.views++;var s=c.sp[st.sel];if(s.sur)st.s.sur++;log("DECIDE","點開「"+s.title+"」"+(s.sur?"(受控驚喜)":""));return all()}
+ if(a==="nc"){st.note=false;return phone()}
+ if(a==="tab"){st.tab=e.dataset.t;return phone()}
+ if(a==="save"){if(!st.saved[sp.title]){st.saved[sp.title]=1;st.adj[sp.title]=(st.adj[sp.title]||0)+3;st.s.dec++;log("LEARN","收藏「"+sp.title+"」→ 偏好 +3")}return all()}
+ if(a==="nav"){st.adj[sp.title]=(st.adj[sp.title]||0)+2;st.s.dec++;log("DECIDE","開啟導航 → 偏好 +2");return all()}
+ if(a==="went"){st.adj[sp.title]=(st.adj[sp.title]||0)+4;st.s.dec++;log("LEARN","實際前往「"+sp.title+"」→ 偏好 +4");return all()}
+ if(a==="skip"){st.adj[sp.title]=(st.adj[sp.title]||0)-6;log("LEARN","「"+sp.title+"」不適合"+(sp.sur?",下次降低此類突破幅度":"")+" → 偏好 -6");return all()}
+ if(a==="ride"){st.s.ride++;st.disp=1;log("MOVE","呼叫 yoxi 前往「"+sp.title+"」");clearTimeout(tm);tm=setTimeout(function(){st.disp=2;phone();tm=setTimeout(function(){st.disp=3;phone()},2600)},1800);return phone()}
+ if(a==="cancel"){clearTimeout(tm);st.disp=0;st.s.ride--;log("MOVE","取消叫車體驗");return all()}
+ if(a==="fb1"||a==="fb0"){st.disp=0;log("LEARN","叫車後回饋:"+(a==="fb1"?"有幫助 → 提高情境權重":"沒幫助 → 降低此情境 CTA 頻率"));return all()}
+ if(a==="reset"){var p=st.pref;init();st.pref=p;st.tab="pref";log("RESET","已清除學習資料");return all()}}
+document.addEventListener("click",function(ev){var e=ev.target.closest("[data-a]");if(!e)return;if(e.dataset.a==="sheetclose"&&ev.target!==e)return;act(e.dataset.a,e)});
+document.addEventListener("change",function(ev){var k=ev.target.dataset.p;if(!k)return;var t=ev.target;st.pref[k]=t.type==="checkbox"?t.checked:+t.value;log("PREF",k+" → "+st.pref[k]);all()});
+init();all();
 </script>
 </body>
 </html>

@@ -1,206 +1,174 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>yoxi AI 移動雷達</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
 <style>
-:root{--pg:#e9edf4;--pn:#fff;--ln:#d6deec;--tx:#0f172a;--mt:#5b6781;--red:#E60012;--soft:#eef2f9;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--pg:#080d1a;--pn:#0f172a;--ln:#1e293b;--tx:#e2e8f0;--mt:#94a3b8;--soft:#1a2338}}
-:root[data-theme="dark"]{--pg:#080d1a;--pn:#0f172a;--ln:#1e293b;--tx:#e2e8f0;--mt:#94a3b8;--soft:#1a2338}
-*{box-sizing:border-box}
-html,body{margin:0;height:100%}
-body{background:var(--pg);color:var(--tx);font-family:"Noto Sans TC",-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;font-size:14px}
-.shell{display:flex;min-height:100%;gap:0}
-aside{width:380px;background:var(--pn);border-right:1px solid var(--ln);padding:14px;overflow-y:auto;height:100vh;position:sticky;top:0}
-main{flex:1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
-h2{font-size:11px;letter-spacing:.08em;color:var(--mt);margin:14px 0 8px;text-transform:uppercase}
-.brand{display:flex;gap:10px;align-items:center}
-.logo{width:34px;height:34px;border-radius:9px;background:var(--red);color:#fff;font-weight:900;display:grid;place-items:center;font-size:18px}
-.brand b{font-size:15px}.brand small{display:block;color:var(--mt);font-size:11px}
-.scs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.scb{background:var(--soft);border:1px solid var(--ln);color:var(--tx);border-radius:11px;padding:9px;text-align:left;cursor:pointer;font:inherit;font-size:12px}
-.scb.on{border-color:var(--red);background:rgba(230,0,18,.1)}
-.scb small{display:block;color:var(--mt);font-size:10px;margin-top:2px}
-.eng{background:var(--soft);border:1px solid var(--ln);border-radius:11px;padding:10px;margin-bottom:8px;font-size:12px}
-.eng h3{margin:0 0 6px;font-size:12px;display:flex;justify-content:space-between}
-.eng h3 span{font-weight:400;font-size:10px;color:var(--mt)}
-.kv{display:flex;justify-content:space-between;padding:2px 0;color:var(--mt)}.kv b{color:var(--tx);font-weight:500}
-.mb{height:6px;border-radius:9px;background:var(--ln);overflow:hidden;margin:3px 0 5px}.mb i{display:block;height:100%;transition:width .4s}
-.code{font:11px/1.5 ui-monospace,Menlo,monospace;background:var(--pg);border-radius:8px;padding:8px;white-space:pre-wrap;word-break:break-all}
-.log{max-height:130px;overflow-y:auto;font:11px/1.6 ui-monospace,Menlo,monospace;color:var(--mt)}
-/* phone */
-#phone{width:100%;max-width:390px;height:min(800px,calc(100vh - 32px));background:#0f172a;color:#e2e8f0;border:10px solid #1e293b;border-radius:46px;overflow:hidden;display:flex;flex-direction:column;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.35)}
-.stat{display:flex;justify-content:space-between;padding:10px 22px 6px;font-size:12px;font-weight:700}
-.hdr{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid #1e293b}
-.hdr .lg{display:flex;align-items:center;gap:7px;font-weight:700}
-.hdr .lg i{width:26px;height:26px;border-radius:50%;background:var(--red);display:grid;place-items:center;font-style:normal;font-weight:900;font-size:13px;color:#fff}
-.tag{font-size:10px;background:rgba(230,0,18,.2);color:#ff6b75;border:1px solid rgba(230,0,18,.35);border-radius:5px;padding:1px 5px}
-.pill{background:#1e293b;border-radius:99px;padding:4px 9px;font-size:11px}
-.scr{flex:1;overflow-y:auto;padding:12px}
-.nv{display:flex;border-top:1px solid #1e293b;background:#0f172a}
-.nv button{flex:1;background:none;border:0;color:#94a3b8;padding:9px 0 11px;font:inherit;font-size:10px;cursor:pointer}
-.nv button.on{color:#ff4b57;font-weight:700}.nv button span{display:block;font-size:17px}
-.note{background:linear-gradient(120deg,#1e293b,#172036);border:1px solid rgba(230,0,18,.45);border-radius:15px;padding:11px;display:flex;gap:9px;margin-bottom:10px;animation:up .4s}
-.note b{font-size:12px}.note p{margin:3px 0 0;font-size:11px;color:#cbd5e1;line-height:1.5}
-.note button{margin-left:auto;background:none;border:0;color:#64748b;cursor:pointer;align-self:flex-start}
-@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.cta{background:var(--red);border-radius:13px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;font-weight:700}
-.cta button{background:#fff;color:var(--red);border:0;border-radius:9px;padding:7px 10px;font-weight:800;cursor:pointer;font-size:12px;white-space:nowrap}
-.rad{background:#162038;border:1px solid #27334f;border-radius:15px;padding:11px;margin-bottom:10px}
-.rad .tt{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:8px}
-.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;text-align:center;font-size:10px}
-.g3 div{background:#0b1220;border-radius:10px;padding:7px 3px;color:#94a3b8}.g3 b{display:block;color:#e2e8f0;font-size:12px;margin-top:2px}
-.sh{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;margin:4px 2px 7px}
-.sh span{font-size:10px;font-weight:400;color:#fbbf24;background:rgba(251,191,36,.12);padding:1px 6px;border-radius:5px}
-.sc{background:#162038;border:1px solid #27334f;border-radius:15px;padding:11px;margin-bottom:8px;cursor:pointer;position:relative;overflow:hidden}
-.sc.on{border-color:var(--red);box-shadow:0 0 0 1px var(--red)}
-.sc .r{display:flex;justify-content:space-between;gap:8px;font-size:13px}
-.rt{font-size:10px;color:#fbbf24}
-.mu{margin:2px 0 0;font-size:11px;color:#94a3b8}
-.r2{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:7px;border-top:1px solid #27334f;font-size:11px;color:#cbd5e1}
-.rs{margin:7px 0 0;background:#0b1220;border-radius:8px;padding:5px 8px;font-size:10px;color:#cbd5e1;line-height:1.5}.rs em{color:#fbbf24;font-style:normal;float:right}
-.sur{position:absolute;top:0;right:0;background:linear-gradient(90deg,#f97316,var(--red));font-style:normal;font-size:9px;font-weight:800;padding:2px 8px;border-bottom-left-radius:9px}
-.bd{font-size:10px;padding:1px 7px;border-radius:6px;border:1px solid}
-.b0{color:#fcd34d;border-color:rgba(252,211,77,.4);background:rgba(252,211,77,.12)}
-.b1{color:#6ee7b7;border-color:rgba(110,231,183,.4);background:rgba(110,231,183,.12)}
-.b2{color:#fde68a;border-color:rgba(253,230,138,.4);background:rgba(253,230,138,.1)}
-.b3{color:#fca5a5;border-color:rgba(252,165,165,.4);background:rgba(252,165,165,.12)}
-.dec{background:#1b2640;border:1px solid #334266;border-radius:15px;padding:12px;margin:12px 0;animation:up .3s}
-.dec h4{margin:0 0 8px;font-size:12px}
-.cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.cb{background:#0b1220;border:1px solid #27334f;border-radius:11px;padding:9px;font-size:11px;color:#94a3b8;position:relative}
-.cb b{display:block;font-size:17px;color:#e2e8f0;margin:3px 0}.cb small{display:block;line-height:1.4}
-.cb.hi{border-color:rgba(230,0,18,.7);background:linear-gradient(#2a1319,#0b1220)}
-.cb em{position:absolute;top:8px;right:9px;font-style:normal;color:#fcd34d;font-weight:700}
-.vd{margin:9px 0;font-size:11px;color:#a7f3d0;text-align:center}
-.bt{display:flex;gap:7px;margin-top:6px}
-.btn{flex:1;border:0;border-radius:10px;padding:10px 6px;font:inherit;font-weight:700;font-size:12px;cursor:pointer;background:#27334f;color:#e2e8f0}
-.btn.p{background:var(--red);color:#fff;flex:1.6}
-a.btn{text-decoration:none;display:flex;align-items:center;justify-content:center;text-align:center}
-.btn:active{transform:scale(.97)}
-.cnf{font-size:10px;color:#94a3b8;text-align:center;margin-top:8px}
-.ov{position:absolute;inset:0;background:rgba(2,6,16,.96);z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;animation:up .3s}
-.rdr{width:96px;height:96px;border-radius:50%;background:rgba(230,0,18,.2);border:1px solid rgba(230,0,18,.45);display:grid;place-items:center;font-size:38px;animation:pl 1.8s infinite}
-@keyframes pl{50%{transform:scale(1.1);opacity:.55}}
-.ov .box{width:100%;background:#0f172a;border:1px solid #1e293b;border-radius:15px;padding:12px;margin:16px 0;font-size:12px;text-align:left}
-.pg{height:6px;border-radius:9px;background:#1e293b;overflow:hidden;margin-top:6px}.pg i{display:block;height:100%;background:#34d399;transition:width 2.4s linear}
-.card{background:#162038;border:1px solid #27334f;border-radius:15px;padding:12px;margin-bottom:10px}
-.card h4{margin:0 0 6px;font-size:13px}.card p{margin:0;font-size:11px;color:#94a3b8;line-height:1.6}
-.tg{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-top:1px solid #27334f;font-size:12px}
-.tg:first-of-type{border-top:0}.tg small{display:block;color:#94a3b8;font-size:10px}
-.tg input[type=checkbox]{accent-color:var(--red);width:20px;height:20px}
-.tg input[type=range]{accent-color:var(--red);width:120px}
-.kp{font-size:26px;font-weight:900;margin:2px 0}
-.fb{width:100%;display:flex;gap:8px}
-.fab{display:none}
-@media (max-width:900px){
- .shell{flex-direction:column}aside{width:100%;height:auto;position:static;border-right:0;border-top:1px solid var(--ln)}
- main{padding:0}#phone{max-width:none;height:100dvh;border:0;border-radius:0}
- .fab{display:block;position:fixed;right:12px;bottom:calc(74px + env(safe-area-inset-bottom,0px));z-index:20;background:var(--red);color:#fff;border:0;border-radius:99px;padding:9px 14px;font:inherit;font-weight:700;font-size:12px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
- .stat{padding-top:calc(8px + env(safe-area-inset-top,0px))}
-}
+:root{--bg:#E9EDF5;--card:#fff;--ink:#14213D;--mut:#5B6882;--or:#E8602C;--tint:#EEF3FB;--pk:#FDEBE3;--ok:#2EAD5B;--mid:#F2B705;--bad:#D64545;--line:#DDE3EE;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0A0F1C;--card:#16213A;--ink:#EAF0FB;--mut:#9AA8C2;--tint:#1F2C48;--pk:#3A2A26;--line:#2B3957}}
+:root[data-theme="dark"]{--bg:#0A0F1C;--card:#16213A;--ink:#EAF0FB;--mut:#9AA8C2;--tint:#1F2C48;--pk:#3A2A26;--line:#2B3957}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",system-ui,sans-serif;font-size:15px;line-height:1.5}
+.wrap{max-width:1080px;margin:0 auto;padding:18px;display:grid;grid-template-columns:392px 1fr;gap:22px;align-items:start}
+@media(max-width:860px){.wrap{display:block;padding:0}.phone{border:0!important;border-radius:0!important;height:100dvh!important;max-width:none!important}.judge{padding:14px}}
+.phone{background:var(--card);border:7px solid #0b1224;border-radius:38px;overflow:hidden;width:100%;max-width:392px;margin:0 auto;display:flex;flex-direction:column;height:780px;position:relative}
+.bar0{display:flex;justify-content:space-between;align-items:center;padding:10px 16px 6px;font-weight:800}
+.logo{color:var(--or);font-size:18px;letter-spacing:.5px}
+.screen{flex:1;overflow-y:auto;padding:6px 14px 16px}
+.nav{display:flex;border-top:1px solid var(--line);background:var(--card)}
+.nav button{flex:1;border:0;background:none;padding:8px 0 10px;color:var(--mut);font:inherit;font-size:11px;cursor:pointer}
+.nav button span{display:block;font-size:20px;line-height:1.2}
+.nav button.on{color:var(--or);font-weight:700}
+.card{background:var(--tint);border-radius:16px;padding:14px;margin-bottom:10px}
+.card.pk{background:var(--pk)}.card.nv{background:#14213D;color:#fff}
+.card h3{margin:0 0 3px;font-size:16px}
+.mut{color:var(--mut);font-size:13px}.nv .mut{color:#B9C4DA}
+.btn{border:0;border-radius:12px;padding:12px 16px;font:inherit;font-weight:700;cursor:pointer;background:var(--tint);color:var(--ink)}
+.btn.or{background:var(--or);color:#fff}.btn.w{width:100%}.btn.sm{padding:6px 12px;font-size:13px}
+.row{display:flex;gap:8px;align-items:center}.sp{justify-content:space-between}.wr{flex-wrap:wrap}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
+.tag{font-size:11px;font-weight:800;color:var(--or);letter-spacing:.5px}
+.opt{cursor:pointer;border:2px solid transparent;transition:.15s}.opt:hover{border-color:var(--or)}
+.chip{background:var(--tint);border-radius:99px;padding:3px 10px;font-size:12px;color:var(--mut)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chips button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}
+.chips button.on{background:var(--or);color:#fff;border-color:var(--or)}
+h2{margin:4px 0 2px;font-size:22px}
+.big{font-size:28px;font-weight:800;color:var(--or);line-height:1.2}
+.bar{height:8px;border-radius:6px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--or);transition:width .4s}
+input[type=range]{width:100%;accent-color:var(--or)}
+.sw{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.sw input{width:22px;height:22px;accent-color:var(--or)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.grid span{aspect-ratio:1;border-radius:8px;background:var(--line)}.grid span.f{background:var(--or)}
+.steps{display:flex;gap:6px;margin:10px 0}.steps i{flex:1;height:5px;border-radius:4px;background:var(--line)}.steps i.on{background:var(--or)}
+.pulse{width:70px;height:70px;border-radius:50%;background:var(--pk);margin:12px auto;display:grid;place-items:center;font-size:30px;animation:p 1.2s infinite}
+@keyframes p{50%{transform:scale(1.12)}}
+.judge .panel{background:var(--card);border-radius:16px;padding:16px;border:1px solid var(--line);margin-bottom:14px}
+.judge h3{margin:0 0 8px;font-size:16px}
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px}
+.flow div{background:var(--tint);border-radius:10px;padding:6px 2px;text-align:center;font-size:11px;color:var(--mut)}.flow div.on{background:var(--or);color:#fff;font-weight:700}
+pre{background:var(--tint);border-radius:10px;padding:10px;font-size:12px;overflow-x:auto;margin:6px 0;white-space:pre-wrap}
+.log{max-height:150px;overflow-y:auto;font-size:13px;color:var(--mut)}.log div{padding:3px 0;border-bottom:1px dashed var(--line)}
+.k3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.k3 div{background:var(--tint);border-radius:12px;padding:8px;text-align:center}.k3 b{font-size:20px;color:var(--or)}
+summary{cursor:pointer}.note{font-size:12px;color:var(--mut)}
 </style>
 </head>
 <body>
-<div class="shell">
-<main><div id="phone"></div></main>
+<div class="wrap">
+ <div class="phone"><div class="bar0"><span class="logo">yoxi 雷達</span><span class="chip" id="clock">11:00</span></div><div class="screen" id="screen"></div><div class="nav" id="nav"></div></div>
+ <div class="judge">
+  <div class="panel"><h3>評審導覽：AI 引擎即時判斷</h3><div class="flow" id="flow"></div><div id="trace"></div></div>
+  <div class="panel"><h3>成效埋點（對應簡報 H1–H3）</h3><div class="k3" id="k3"></div><p class="note">H4 長期留存需 Pilot 實測。以下為事件紀錄：</p><div class="log" id="log"></div>
+   <p class="note">全部為模擬資料，非真實 Pilot 結果。</p><div class="row wr"><button class="btn sm" onclick="nextDay()">模擬隔天</button><button class="btn sm" onclick="resetAll()">重置</button></div></div>
+ </div>
 </div>
 <script>
-var P=function(title,cu,price,rt,walk,drive,park,lo,hi,fare,reason,sur,match){return{title:title,cu:cu,price:price,rt:rt,walk:walk,drive:drive,park:park,lo:lo,hi:hi,fare:fare,reason:reason,sur:sur,match:match}};
-var S=[
-{n:"平日午餐 MVP",i:"🍱",t:"11:15",loc:"信義區",win:"60–90 分",wx:"晴 26°C",tr:"順暢",pk:"困難",int:45,
- pt:"午餐時間充裕,要不要吃遠一點?",pb:"3 家精選餐廳已評估車程與停車難度,最遠車程只要 9 分鐘。",cta:"",
- sp:[P("大戶屋定食 信義店","日式定食","NT$280–350",4.6,"步行 6 分",3,3,10,15,100,"符合你平日愛吃的日式定食,步行即達",0,96),
- P("翠林越式餐廳","越式河粉／簡餐","NT$180–250",4.5,"步行 8 分",4,2,5,8,110,"清爽快速,步行距離剛好",0,89),
- P("三味韓式燒肉名家","韓式燒肉定食","NT$320–450",4.8,"步行 22 分",9,3,12,18,135,"只突破距離一項:搭車 9 分鐘直達,免找車位",1,74)]},
-{n:"突發暴雨",i:"🌧️",t:"17:45",loc:"南港軟體園區",win:"即時前往",wx:"大雨 18°C",tr:"壅塞",pk:"困難",int:88,
- pt:"外頭下大雨,返家免淋雨方案",pb:"偵測到降雨量上升與捷運排隊人潮,附近已有 yoxi 司機整備。",cta:"雨勢加大,門口上車免淋雨",
- sp:[P("返回家中(南港→市政府)","接送返家","—",5,"步行淋雨 15 分",14,3,15,20,185,"雨勢加大,由大樓門口直接上車",0,93),
- P("Citylink 美食街","室內避雨商場","NT$200–500",4.7,"步行 12 分",5,2,6,10,110,"乾爽室內,避開下班車潮",0,88),
- P("松菸誠品食堂","文青晚餐","NT$350–600",4.9,"步行 40 分",12,3,10,14,160,"受控驚喜:雨天專車直達,不必找車位",1,71)]},
-{n:"深夜酒吧",i:"🍸",t:"23:30",loc:"大安區",win:"深夜放鬆",wx:"涼爽 21°C",tr:"順暢",pk:"不建議開車",int:95,
- pt:"聚會結束,安心回家",pb:"偵測到酒吧與餐酒館密集區,飲酒請勿開車。",cta:"飲酒不開車,一鍵安心返家",
- sp:[P("Draft Land 忠孝店","雞尾酒／輕食","NT$300–600",4.8,"步行 5 分",2,0,0,0,100,"熱門續攤酒吧,建議搭車前往",0,91),
- P("返回家中(大安→板橋)","安心夜歸","—",5,"捷運已停駛",18,0,0,0,260,"末班車已過,專車直達家門口",0,95),
- P("貓空夜景茶館","夜景／宵夜","NT$300",4.7,"距離遠",22,0,0,0,380,"深夜驚喜:來一趟夜景 Micro Trip",1,68)]},
-{n:"大巨蛋散場",i:"🎤",t:"22:15",loc:"大巨蛋周邊",win:"離場避峰",wx:"陰 24°C",tr:"高度壅塞",pk:"困難",int:92,
- pt:"演出結束,避開人潮離場",pb:"周邊約 4 萬人散場,已開啟 yoxi 專屬上車點。",cta:"散場尖峰,錯峰預約專屬上車點",
- sp:[P("前往台北車站","跨城交通","—",4.9,"捷運排隊 40 分",12,3,20,28,170,"避開捷運人潮,光復南路專屬上車點",0,92),
- P("通化街夜市宵夜","在地宵夜","NT$100–250",4.6,"步行 25 分",7,3,12,18,120,"演出後補充體力,短程接送",0,85),
- P("美麗華摩天輪夜景","宵夜／約會","NT$400",4.8,"步行 50 分",14,2,4,8,210,"受控驚喜:離場不急著回家",1,70)]}];
-var SURL=["小幅(距離 +3 分)","標準(距離或價格擇一)","大膽(兩項皆突破)"];
-var st,tm;
-function init(){st={sc:0,sel:2,tab:"radar",note:true,disp:0,logs:[],adj:{},saved:{},s:{open:1,views:0,dec:0,ride:0,cta:0,sur:0,push:1},pref:{loc:true,hist:true,sur:1,cap:2}};
- log("CONTEXT","識別為「"+S[0].n+"」情境 ("+S[0].loc+")");log("DISCOVER","產出 2 熟悉 + 1 受控驚喜")}
-function log(k,m){st.logs.unshift("["+new Date().toTimeString().slice(0,8)+"] "+k+": "+m);st.logs=st.logs.slice(0,40)}
-function mt(sp){return Math.max(40,Math.min(99,sp.match+(st.adj[sp.title]||0)))}
-function PB(p){return['<span class="bd b0">⛔ 不可開車</span>','<span class="bd b1">🟢 容易</span>','<span class="bd b2">🟡 普通</span>','<span class="bd b3">🔴 困難</span>'][p]}
-function calc(sp){var yox=2+sp.drive;if(!sp.park)return{yox:yox,self:null,save:null};var self=Math.round(sp.drive+(sp.lo+sp.hi)/2);return{yox:yox,self:self,save:self-yox}}
-var DEST={"返回家中(南港→市政府)":"市政府捷運站","返回家中(大安→板橋)":"板橋車站","前往台北車站":"台北車站","松菸誠品食堂":"松山文創園區 誠品","Citylink 美食街":"南港 Citylink"};
-function navUrl(sp){var q=DEST[sp.title]||(sp.title+" 台北");return"https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(q)+"&travelmode="+(sp.park===0?"transit":"driving")}
-function cmp(sp){var c=calc(sp),l,v;
- if(c.self===null){l='<div class="cb"><span>🚗 自行開車</span><b>⛔ 不建議</b><small>飲酒或夜間不建議自駕</small></div>';v="飲酒不開車,搭 yoxi 最安心"}
- else{l='<div class="cb"><span>🚗 自行開車</span><b>約 '+c.self+' 分</b><small>行車 '+sp.drive+' + 找位 '+sp.lo+'–'+sp.hi+'(Phase 2 預估區間)</small></div>';
-  v=c.save>=8?"搭 yoxi 約省 "+c.save+" 分鐘找位時間":"兩者時間差不大,依今天的心情選擇(不硬推叫車)"}
- return'<div class="cmp">'+l+'<div class="cb hi"><span>🚕 叫 yoxi</span><b>約 '+c.yox+' 分</b><small>等候 2 + 車程 '+sp.drive+',門口下車</small><em>NT$'+sp.fare+'</em></div></div><div class="vd">'+v+'</div>'}
-function radar(c){var h="";
- if(st.note)h+='<div class="note"><span style="font-size:20px">✨</span><div><b>'+c.pt+' <span class="tag">Context AI</span></b><p>'+c.pb+'</p></div><button data-a="nc">✕</button></div>';
- else if(st.s.push>=st.pref.cap)h+='<div class="note" style="border-color:#334266"><span style="font-size:18px">🔕</span><div><p>今日推播已達上限('+st.pref.cap+' 則),避免通知疲勞,以下為你主動開啟的雷達。</p></div></div>';
- if(c.int>65)h+='<div class="cta"><span>🚨 高叫車意圖 · '+c.cta+'</span><button data-a="ride">叫 yoxi</button></div>';
- h+='<div class="rad"><div class="tt"><span>📡 當前雷達環境判讀</span><span style="color:#94a3b8;font-weight:400">'+c.t+'</span></div><div class="g3"><div>可用時間<b style="color:#6ee7b7">'+c.win+'</b></div><div>天氣路況<b>'+c.wx.split(" ")[0]+' · '+c.tr+'</b></div><div>停車難度<b>'+c.pk+'</b></div></div></div>';
- h+='<div class="sh"><span style="background:none;color:#e2e8f0;font-size:12px;font-weight:700;padding:0">🧭 '+c.n+'探索</span><span>2 熟悉 + 1 驚喜</span></div>';
- c.sp.forEach(function(s,i){h+='<div class="sc'+(st.sel===i?" on":"")+'" data-a="spot" data-i="'+i+'">'+(s.sur?'<i class="sur">⚡ 受控驚喜</i>':"")+'<div class="r"><b>'+s.title+'</b><span class="rt">★'+s.rt+'</span></div><p class="mu">'+s.cu+' · '+s.price+'</p><div class="r2"><span>🚶 '+s.walk+' | 🚗 '+s.drive+' 分</span>'+PB(s.park)+'</div><p class="rs">「'+s.reason+'」<em>匹配 '+mt(s)+'%</em></p></div>'});
- var sp=c.sp[st.sel];
- h+='<div class="dec"><h4>🛣️ 去得了嗎?去「'+sp.title+'」</h4>'+cmp(sp)+'<div class="bt"><button class="btn" data-a="save">'+(st.saved[sp.title]?"✓ 已收藏":"☆ 收藏")+'</button><a class="btn" data-a="nav" href="'+navUrl(sp)+'" target="_blank" rel="noopener noreferrer">🧭 Google 導航</a><button class="btn p" data-a="ride">🚕 叫 yoxi · NT$'+sp.fare+'</button></div>'+
- '<div class="bt"><button class="btn" data-a="went">我去了</button><button class="btn" data-a="skip">不太適合</button></div><div class="cnf">預估僅供參考,信心:'+(sp.park?"中":"高")+' · 你的回饋會校正下次推薦</div></div>';
- return h}
-function tg(k,t,d,v){return'<div class="tg"><div>'+t+'<small>'+d+'</small></div><input type="checkbox" data-p="'+k+'"'+(v?" checked":"")+'></div>'}
-function pref(){var p=st.pref;
- return'<div class="card"><h4>🔐 隱私與授權</h4><p>明確告知、可隨時退出,遵循個資法。</p>'+tg("loc","位置授權","用於判斷生活圈與步行/車程",p.loc)+tg("hist","歷史互動學習","收藏、前往、忽略用於校正推薦",p.hist)+'</div>'+
- '<div class="card"><h4>⚡ 探索強度</h4><p>目前:'+SURL[p.sur]+'</p><div class="tg"><div>驚喜突破幅度<small>保守 ← → 大膽</small></div><input type="range" min="0" max="2" step="1" value="'+p.sur+'" data-p="sur"></div>'+
- '<div class="tg"><div>每日推播上限<small>寧可少而準:'+p.cap+' 則</small></div><input type="range" min="1" max="3" step="1" value="'+p.cap+'" data-p="cap"></div></div>'+
- '<div class="card"><h4>🗑️ 退出並清除</h4><p>清除本次 Demo 的學習資料並重新開始。</p><div class="bt"><button class="btn" data-a="reset">清除資料</button></div></div>'}
-function bar(l,v,t,d){var w=t?Math.min(100,Math.round(v/t*100)):0;return'<div class="card"><p>'+l+'</p><div class="kp">'+v+' <small style="font-size:12px;font-weight:400;color:#94a3b8">'+d+'</small></div><div class="pg"><i style="width:'+w+'%;transition:none"></i></div></div>'}
-function kpi(){var s=st.s,r=s.views?Math.round(s.dec/s.views*100):0,c=s.cta?Math.round(s.ride/s.cta*100):0;
- return'<div class="card"><h4>三個北極星指標</h4><p>以下為本次操作的示意數據,實際成效以 Pilot 與 A/B 測試驗證(H1–H3)。</p></div>'+
- bar("① 非叫車情境開啟(H1)",s.open,10,"次")+bar("② 推薦 → 收藏/導航/前往 決策率(H2)",r+"%",0,"("+s.dec+"/"+s.views+" 次點開)").replace('style="width:0%','style="width:'+r+'%')+
- bar("③ 高意圖 CTA → 叫車轉換(H3)",c+"%",0,"("+s.ride+"/"+s.cta+" 次曝光)").replace('style="width:0%','style="width:'+c+'%')+
- '<div class="card"><h4>學習到的偏好</h4><p>受控驚喜被點開 '+s.sur+' 次。系統依你的接受度調整下次距離/價格/類型的突破幅度。</p></div>'+
- '<div class="card"><h4>三階段路線</h4><p><b>Phase 1 Micro Trip</b> 午餐 60–90 分,單城市 Pilot。<br><b>Phase 2 Mini Trip</b> 週末半日與高意圖場景。<br><b>Phase 3 Day Trip</b> 旅客一日遊,多語多點移動。</p></div>'}
-function ov(){if(!st.disp)return"";var sp=S[st.sc].sp[st.sel],d=st.disp,x="";
- if(d===1)x='<h3>正在為你配對司機</h3><p style="color:#94a3b8;font-size:12px">前往 <b style="color:#fcd34d">'+sp.title+'</b></p>';
- else if(d===2)x='<h3>司機已接單,正在趕來</h3><div class="box"><div>🚘 ABC-1234 · 王師傅 · ★4.9</div><div class="pg"><i style="width:100%"></i></div></div>';
- else x='<h3>已抵達上車點 ✅</h3><p style="color:#94a3b8;font-size:12px">這次推薦對你有幫助嗎?</p><div class="fb" style="margin-top:14px"><button class="btn" data-a="fb1">👍 有幫助</button><button class="btn" data-a="fb0">👎 沒幫助</button></div>';
- var bx=d===1?'<div class="box"><div class="kv" style="color:#94a3b8">預估抵達<b style="color:#6ee7b7">2 分鐘內</b></div><div class="kv" style="color:#94a3b8">預估車資<b style="color:#fff">NT$'+sp.fare+'</b></div><div class="kv" style="color:#94a3b8">路徑<b style="color:#93c5fd">已避開壅塞路段</b></div></div>':"";
- return'<div class="ov"><div class="rdr">🚕</div><div style="height:14px"></div>'+x+bx+(d<3?'<button class="btn" style="flex:none;padding:9px 22px;border-radius:99px" data-a="cancel">取消叫車體驗</button>':"")+'</div>'}
-function sheet(){if(!st.sheet)return"";return'<div class="ov" style="justify-content:flex-end;padding:0;background:rgba(2,6,16,.7)" data-a="sheetclose"><div class="box" style="margin:0;border-radius:20px 20px 0 0;padding:16px 14px 20px"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:13px">切換地點與情境</b><button data-a="sheet" style="background:none;border:0;color:#94a3b8;font-size:18px;cursor:pointer;padding:4px 8px">✕</button></div><p style="color:#94a3b8;font-size:11px;margin:4px 0 10px">體驗不同時間地點下,雷達如何主動提供建議</p>'+S.map(function(x,i){return'<button class="btn" style="width:100%;margin-bottom:7px;text-align:left;display:block;padding:13px 12px;'+(st.sc===i?"outline:2px solid var(--red)":"")+'" data-a="sc" data-i="'+i+'">'+x.i+' '+x.n+' · '+x.t+' · '+x.loc+'</button>'}).join("")+'</div></div>'}
-function phone(){var c=S[st.sc],old=document.querySelector(".scr"),y=old?old.scrollTop:0,b=st.tab==="radar"?radar(c):st.tab==="pref"?pref():kpi();
- document.getElementById("phone").innerHTML='<div class="stat"><span>'+c.t+'</span><span>📶 ᯤ 🔋</span></div><div class="hdr"><div class="lg"><i>y</i>yoxi <span class="tag">AI 移動雷達</span></div><span class="pill" data-a="sheet" style="cursor:pointer">📍 '+c.loc+' ▾</span></div><div class="scr">'+b+'</div>'+ov()+sheet()+
- '<div class="nv">'+[["radar","📡","移動雷達"],["pref","🔐","偏好與隱私"]].map(function(t){return'<button data-a="tab" data-t="'+t[0]+'" class="'+(st.tab===t[0]?"on":"")+'"><span>'+t[1]+'</span>'+t[2]+'</button>'}).join("")+'</div>';
- var n=document.querySelector(".scr");if(n)n.scrollTop=y}
-function all(){phone()}
-function pick(i){st.sc=i;st.sel=2;st.s.open++;st.tab="radar";var c=S[i];
- if(st.s.push<st.pref.cap){st.note=true;st.s.push++;log("PUSH","「"+c.pt+"」")}else{st.note=false;log("GUARD","已達每日推播上限,略過推播(避免通知疲勞)")}
- if(c.int>65){st.s.cta++;log("INTENT","高意圖 "+c.int+"%,顯示叫車入口")}log("CONTEXT","切換至「"+c.n+"」");all()}
-function act(a,e){var c=S[st.sc],sp=c.sp[st.sel];
- if(a==="sheet"||a==="sheetclose"){st.sheet=!st.sheet;return phone()}
- if(a==="sc"){st.sheet=false;return pick(+e.dataset.i)}
- if(a==="spot"){st.sel=+e.dataset.i;st.s.views++;var s=c.sp[st.sel];if(s.sur)st.s.sur++;log("DECIDE","點開「"+s.title+"」"+(s.sur?"(受控驚喜)":""));return all()}
- if(a==="nc"){st.note=false;return phone()}
- if(a==="tab"){st.tab=e.dataset.t;return phone()}
- if(a==="save"){if(!st.saved[sp.title]){st.saved[sp.title]=1;st.adj[sp.title]=(st.adj[sp.title]||0)+3;st.s.dec++;log("LEARN","收藏「"+sp.title+"」→ 偏好 +3")}return all()}
- if(a==="nav"){st.adj[sp.title]=(st.adj[sp.title]||0)+2;st.s.dec++;log("DECIDE","開啟 Google Maps 導航 → 偏好 +2");return}
- if(a==="went"){st.adj[sp.title]=(st.adj[sp.title]||0)+4;st.s.dec++;log("LEARN","實際前往「"+sp.title+"」→ 偏好 +4");return all()}
- if(a==="skip"){st.adj[sp.title]=(st.adj[sp.title]||0)-6;log("LEARN","「"+sp.title+"」不適合"+(sp.sur?",下次降低此類突破幅度":"")+" → 偏好 -6");return all()}
- if(a==="ride"){st.s.ride++;st.disp=1;log("MOVE","呼叫 yoxi 前往「"+sp.title+"」");clearTimeout(tm);tm=setTimeout(function(){st.disp=2;phone();tm=setTimeout(function(){st.disp=3;phone()},2600)},1800);return phone()}
- if(a==="cancel"){clearTimeout(tm);st.disp=0;st.s.ride--;log("MOVE","取消叫車體驗");return all()}
- if(a==="fb1"||a==="fb0"){st.disp=0;log("LEARN","叫車後回饋:"+(a==="fb1"?"有幫助 → 提高情境權重":"沒幫助 → 降低此情境 CTA 頻率"));return all()}
- if(a==="reset"){var p=st.pref;init();st.pref=p;st.tab="pref";log("RESET","已清除學習資料");return all()}}
-document.addEventListener("click",function(ev){var e=ev.target.closest("[data-a]");if(!e)return;if(e.dataset.a==="sheetclose"&&ev.target!==e)return;act(e.dataset.a,e)});
-document.addEventListener("change",function(ev){var k=ev.target.dataset.p;if(!k)return;var t=ev.target;st.pref[k]=t.type==="checkbox"?t.checked:+t.value;log("PREF",k+" → "+st.pref[k]);all()});
-init();all();
+const $=id=>document.getElementById(id);
+const PK={e:{t:'容易',c:'--ok',r:[2,4]},m:{t:'普通',c:'--mid',r:[5,8]},h:{t:'困難',c:'--bad',r:[8,15]}};
+const FAM=[{n:'日式定食',c:'日式',w:6,p:'m'},{n:'越式料理',c:'越式',w:8,p:'m'},{n:'港式燒臘',c:'港式',w:5,p:'e'},{n:'麵食小館',c:'麵食',w:4,p:'e'}];
+const SUR=[{n:'韓式料理',c:'韓式',d:9,p:'h'},{n:'泰式料理',c:'泰式',d:12,p:'m'},{n:'義式餐酒館',c:'義式',d:14,p:'h'}];
+const INT={airport:{n:'機場',s:[35,25,5,15],tip:'行李多、停車費高、時間敏感'},station:{n:'車站',s:[30,20,5,15],tip:'尖峰接駁需求集中'},bar:{n:'酒吧',s:[30,20,0,15],tip:'飲酒後不開車，提供安全回程'},hospital:{n:'醫院',s:[30,20,5,10],tip:'停車與步行負擔大'},event:{n:'活動散場',s:[30,25,5,15],tip:'人潮湧出、停車一位難求'},rain:{n:'雨天',s:[10,15,35,15],tip:'步行意願下降'},none:{n:'一般午後',s:[0,5,0,10],tip:'沒有明確移動壓力'}};
+const SIG=['場域','停車難度','天氣','yoxi 供需'];
+const S0=()=>({onb:0,c:{loc:1,time:1,beh:1},tab:0,sel:null,ride:null,opened:0,avail:90,rain:0,intent:'airport',pref:{日式:2,越式:1,港式:1,麵食:1},explored:12,newShops:0,saved:0,parkMin:0,log:[],ev:{open:0,view:0,decide:0,cta:0,ride:0},push:1,off:0});
+let S=S0(),T=null;
+const L=()=>Math.floor((S.avail-30)/2);
+const log=t=>{S.log.unshift(new Date().toTimeString().slice(0,5)+'  '+t)};
+function trace(i,h){$('flow').innerHTML=['Context','Discovery','Mobility Intent','LLM 轉譯','Learn Loop'].map((x,k)=>`<div class="${k===i?'on':''}">${x}</div>`).join('');$('trace').innerHTML=h}
+function pick(){
+  const l=L(),pr=x=>S.c.beh?(S.pref[x.c]||0):0;
+  const f=FAM.filter(x=>x.w<=l).sort((a,b)=>pr(b)-pr(a)).slice(0,2).map((x,i)=>({...x,kind:i?'今天方便':'平常喜歡',trav:x.w,mode:'步行'}));
+  const s=SUR.find(x=>x.d<=l);
+  if(s)f.push({...s,kind:'今天不一樣',trav:s.d,mode:'車程'});
+  return f;
+}
+const cta=o=>o.mode==='車程'||S.rain;
+const pkTag=p=>`<span class="dot" style="background:var(${PK[p].c})"></span>停車${PK[p].t}`;
+/* ---------- onboarding ---------- */
+function onboard(){
+  trace(0,'<p class="mut">首次使用：yoxi 提供的是去識別化群體趨勢；個人化僅來自你授權的 App 內互動，可隨時關閉或刪除。</p>');
+  const sw=(k,t,d)=>`<div class="sw"><div><b>${t}</b><div class="mut">${d}</div></div><input type="checkbox" ${S.c[k]?'checked':''} onchange="S.c.${k}=this.checked?1:0"></div>`;
+  return `<div style="text-align:center;margin:14px 0"><div class="pulse">📡</div><h2>yoxi 雷達</h2><div class="mut">想去哪 → 去得了 → 怎麼去</div></div>
+  <div class="card"><b>讓推薦更懂你（可隨時關閉）</b>${sw('loc','常用地點','判斷工作生活圈與探索半徑')}${sw('time','常用時段','在合適時間提醒，每日最多 1 則')}${sw('beh','互動行為','學習你能接受的距離與口味')}</div>
+  <p class="note">遵循個資法；送入 AI 的僅為結構化摘要，不含可識別個資。</p><button class="btn or w" onclick="S.onb=1;log('完成授權設定');render()">開始使用</button>`;
+}
+/* ---------- tab 0 radar ---------- */
+function home(){
+  if(S.off)return `<div class="card pk"><h3>雷達已關閉</h3><p class="mut">你已退出 yoxi 雷達，不會收到推薦與推播。</p><button class="btn or" onclick="S.off=0;render()">重新開啟</button></div>`;
+  const l=L(),zone=S.c.loc?'工作生活圈':'預設區域（未授權）';
+  const ctl=`<details class="card"><summary><b>評審情境控制</b></summary><label class="mut">距離下個行程 <b>${S.avail}</b> 分鐘</label><input type="range" min="40" max="120" step="5" value="${S.avail}" oninput="S.avail=+this.value;S.opened=1;render()"><label class="mut"><input type="checkbox" ${S.rain?'checked':''} onchange="S.rain=this.checked?1:0;render()"> 模擬下雨</label></details>`;
+  const head=`<div class="mut">平日 11:00・${zone}</div><h2>今天想去哪？</h2><div class="chips"><span class="chip">下個行程 ${S.avail} 分後</span><span class="chip">${S.rain?'下雨':'晴'}</span><span class="chip">${l>=9?'探索半徑：放大':l>=6?'探索半徑：步行':'探索半徑：近距離'}</span></div>`;
+  trace(0,`<p class="mut"><b>Context Engine</b>（時間序列）判斷目前情境；需求趨勢來自 yoxi 去識別化叫車時段與頻率：</p><pre>{"time":"11:00","yoxi_trend":"午餐前移動需求上升","zone":"${zone}","available_min":${S.avail},"max_one_way_min":${l},"weather":"${S.rain?'下雨':'晴'}"}</pre><p class="mut">${l>=9?'時間充裕 → 適度放大探索半徑':l>=6?'時間普通 → 以步行範圍為主':'時間緊 → 不安排驚喜'}</p>`);
+  let push='';
+  if(!S.opened){push=S.c.time&&S.push>0?`<div class="card nv opt" onclick="openIt()"><div class="tag">yoxi・11:00・今日 1/1 則</div><b>今天時間比較充裕，要不要吃遠一點？</b><div class="mut">點擊查看 3 個選項</div></div>`:`<div class="card"><b>${S.c.time?'今日推播已達上限（1/1）':'未授權常用時段，不主動推播'}</b><div class="mut">寧可少而準。</div></div>`;
+    return head+push+`<button class="btn w" onclick="openIt()">直接開啟探索（非叫車情境）</button>`+ctl}
+  const ps=pick();
+  return head+`<div class="row sp" style="margin:8px 0"><b>2 個懂你＋1 個驚喜</b><button class="btn sm" onclick="log('重新整理推薦');render()">重新整理</button></div>`+ps.map((o,i)=>`<div class="card opt" onclick="sel(${i})"><div class="row sp"><span class="tag">${o.kind}</span><span class="mut">${o.mode} ${o.trav} 分</span></div><h3>${o.n}</h3><div class="mut">${pkTag(o.p)}${cta(o)?'・可叫 yoxi':''}</div></div>`).join('')+(ps.length<3?'<div class="card pk mut">時間較緊，今天不安排「驚喜」選項。</div>':'')+ctl;
+}
+function openIt(){if(!S.opened){S.opened=1;S.ev.open++;if(S.push>0)S.push--;log('H1 非叫車開啟');}render()}
+function sel(i){S.sel=pick()[i];S.ev.view++;log('檢視 '+S.sel.n);render()}
+function detail(){
+  const o=S.sel,pk=PK[o.p],drv=o.mode==='車程'?o.trav:Math.max(3,Math.round(o.trav/3)),show=cta(o),f=pk.r;
+  const sent=`${o.kind==='今天不一樣'?'今天換個口味，':''}${o.n}${o.mode}${o.trav}分，停車${pk.t}${show?'，搭 yoxi 可省下找位時間':'，走路就到'}。`;
+  trace(3,`<p class="mut"><b>LLM 轉譯層</b>只把結構化判斷轉成一句話，不憑空決策：</p><pre>{"place":"${o.n}","type":"${o.kind}","${o.mode==='車程'?'drive':'walk'}_min":${o.trav},"parking":"${pk.t}","show_cta":${show}}</pre><p><b>→「${sent}」</b></p><p class="note">Phase 1 以難度分級呈現；Phase 2 才輸出找位區間並標示信心程度。</p>`);
+  return `<button class="btn sm" onclick="S.sel=null;render()">← 返回</button><div class="card" style="margin-top:10px"><span class="tag">${o.kind}</span><h2>${o.n}</h2><div class="mut">${o.mode} ${o.trav} 分・${pkTag(o.p)}</div><p style="margin:8px 0 0">${sent}</p></div>
+  ${show?`<b>怎麼去？</b><div class="row" style="margin:8px 0"><div class="card" style="flex:1;margin:0"><div class="mut">自行開車</div><div class="big">${drv+f[0]}–${drv+f[1]+3}<small style="font-size:13px"> 分</small></div><div class="mut">含找位約 ${f[0]}–${f[1]} 分（預估）</div></div><div class="card pk" style="flex:1;margin:0"><div class="mut">yoxi</div><div class="big">${drv+4}<small style="font-size:13px"> 分</small></div><div class="mut">預估等候 4 分，免找位</div></div></div>`:'<div class="card mut">步行即可抵達，不硬推叫車。</div>'}
+  <div class="row"><button class="btn" style="flex:1" onclick="act('save')">收藏</button><button class="btn" style="flex:1" onclick="act('nav')">導航</button></div>${show?'<button class="btn or w" style="margin-top:8px" onclick="startRide(S.sel,0)">叫 yoxi 前往</button>':''}`;
+}
+function learn(o,w){S.pref[o.c]=(S.pref[o.c]||0)+w;trace(4,`<p class="mut"><b>Learn Loop</b>：記錄 DISCOVER→DECIDE→MOVE，更新對「${o.c||'此類'}」的偏好，下次更懂你。</p><pre>${JSON.stringify(S.pref)}</pre>`)}
+function act(k){const o=S.sel;S.ev.decide++;if(k==='save'){S.saved++;log('H2 決策：收藏 '+o.n);learn(o,1)}else{S.explored++;S.newShops++;log('H2 決策：導航 '+o.n);learn(o,2)}S.sel=null;S.opened=1;S.tab=2;render0(1)}
+/* ---------- ride flow ---------- */
+function startRide(o,fromIntent){
+  S.ev.cta++;S.ev.ride++;S.ride={o,st:0,p:0,fi:fromIntent};log('H3 叫車轉換：'+o.n);clearTimeout(T);
+  T=setTimeout(function go(){const r=S.ride;if(!r)return;if(r.st===0)r.st=1;else if(r.st===1)r.st=2;else{r.p+=20;if(r.p>=100){r.st=3;S.explored++;S.newShops++;S.parkMin+=Math.round((PK[o.p].r[0]+PK[o.p].r[1])/2);learn(o,2);log('行程完成：'+o.n)}}
+    if(r.st<3)T=setTimeout(go,r.st===1?1800:700);render()},1600);
+  render();
+}
+function ride(){
+  const r=S.ride,o=r.o,lab=['尋找附近車輛…','司機已接單・預計 4 分鐘抵達','行程中','已抵達'][r.st];
+  const body=r.st===0?'<div class="pulse">🔎</div>':r.st===1?'<div class="card"><b>司機・示意</b><div class="mut">車牌 ABC-1234（示意）</div></div>':r.st===2?`<div class="bar" style="margin:16px 0"><i style="width:${r.p}%"></i></div>`:`<div class="card pk"><h3>🎉 已抵達 ${o.n}</h3><p class="mut">這趟省下約 ${Math.round((PK[o.p].r[0]+PK[o.p].r[1])/2)} 分鐘找停車時間，已加入你的探索足跡。</p><button class="btn or w" onclick="S.ride=null;S.sel=null;S.tab=2;render()">查看探索足跡</button></div>`;
+  return `<div class="steps">${[0,1,2,3].map(i=>`<i class="${i<=r.st?'on':''}"></i>`).join('')}</div><h2 style="text-align:center">${lab}</h2><div class="mut" style="text-align:center">前往 ${o.n}</div>${body}${r.st<3?'<button class="btn w" onclick="clearTimeout(T);S.ride=null;log(\'取消叫車\');render()">取消</button>':''}`;
+}
+/* ---------- tab 1 intent ---------- */
+function intent(){
+  const x=INT[S.intent],sc=x.s.reduce((a,b)=>a+b,0),show=sc>=60;
+  trace(2,`<p class="mut"><b>Mobility Intent Engine</b>（規則＋預測）綜合 yoxi 場域屬性（POI）、熱門上下車與活動熱點、路況、天氣與供需，達 60 分才顯示叫車入口；停車資料取得前以熱點密度代理。</p><pre>${x.s.map((v,i)=>SIG[i]+' '+v).join(' ｜ ')}\n合計 ${sc} → ${show?'顯示 CTA':'不顯示（不硬推）'}</pre>`);
+  return `<h2>情境雷達</h2><div class="mut">模擬你正在以下場景</div><div class="chips">${Object.keys(INT).map(k=>`<button class="${S.intent===k?'on':''}" onclick="S.intent='${k}';render()">${INT[k].n}</button>`).join('')}</div>
+  <div class="card"><h3>${x.n}</h3><div class="mut">${x.tip}</div></div>${x.s.map((v,i)=>`<div class="row sp mut"><span>${SIG[i]}</span><span>${v}</span></div><div class="bar" style="margin:3px 0 8px"><i style="width:${v*100/40}%"></i></div>`).join('')}<div class="big" style="margin:6px 0">${sc} 分</div>
+  ${show?`<div class="card pk"><b>${S.intent==='bar'?'喝了酒就別開車':'現在適合叫 yoxi'}</b><div class="mut">預估等候 4 分</div><button class="btn or w" style="margin-top:8px" onclick="startRide({n:'${x.n}周邊',mode:'車程',trav:10,p:'e',c:''},1)">叫 yoxi 前往</button></div>`:'<div class="card"><b>不顯示叫車入口</b><div class="mut">沒有明確移動壓力，先提供價值，不打擾。</div></div>'}`;
+}
+/* ---------- tab 2 footprints ---------- */
+function foot(){
+  trace(4,'<p class="mut"><b>長期使用機制</b>：每日情境輪替、越用越懂、探索足跡、每週移動週報；每日最多 1 則推播。</p>');
+  const f=Math.min(12,Math.round(S.explored/3)),top=Object.entries(S.pref).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  return `<h2>探索足跡</h2><div class="card"><div class="mut" style="margin-bottom:8px">已探索 ${S.explored} 家・生活圈 ${f}/12 區</div><div class="grid">${Array.from({length:12},(_,i)=>`<span class="${i<f?'f':''}"></span>`).join('')}</div></div>
+  <div class="card pk"><h3>每週移動週報</h3><div class="row sp"><span>探索新店</span><b>${S.newShops+2} 家</b></div><div class="row sp"><span>收藏</span><b>${S.saved} 家</b></div><div class="row sp"><span>省下找停車時間</span><b>${S.parkMin} 分</b></div><div class="row sp"><span>常去時段</span><b>11:00–12:00</b></div></div>
+  <div class="card"><h3>越用越懂</h3>${S.c.beh?top.map(([k,v])=>`<div class="mut">${k}</div><div class="bar" style="margin:2px 0 6px"><i style="width:${Math.min(100,v*14)}%"></i></div>`).join(''):'<div class="mut">未授權互動行為，目前不做個人化。</div>'}</div>`;
+}
+/* ---------- tab 3 me ---------- */
+function me(){
+  trace(0,'<p class="mut">隱私與控制：使用者可隨時調整授權、關閉雷達或刪除資料。</p>');
+  const sw=(k,t)=>`<div class="sw"><b>${t}</b><input type="checkbox" ${S.c[k]?'checked':''} onchange="S.c.${k}=this.checked?1:0;log('授權變更：${t}');render()"></div>`;
+  return `<h2>我的</h2><div class="card"><b>資料授權</b>${sw('loc','常用地點')}${sw('time','常用時段')}${sw('beh','互動行為')}</div>
+  <div class="card"><div class="sw" style="border:0"><div><b>yoxi 雷達</b><div class="mut">關閉後不再收到推薦與推播</div></div><input type="checkbox" ${S.off?'':'checked'} onchange="S.off=this.checked?0:1;log('雷達 '+(S.off?'關閉':'開啟'));render()"></div></div>
+  <div class="card"><b>推播頻率</b><div class="mut">每日最多 1 則，寧可少而準</div></div><button class="btn w" onclick="resetAll()">刪除我的資料並重置</button><p class="note">AI 僅轉譯結構化判斷；所有資料於本 Demo 中皆為模擬。</p>`;
+}
+/* ---------- shell ---------- */
+function render0(keep){
+  const t=S.tab;
+  $('nav').style.display=S.onb&&!S.ride?'flex':'none';
+  $('nav').innerHTML=[['📡','雷達'],['🌦','情境'],['🗺','足跡'],['👤','我的']].map((x,i)=>`<button class="${t===i?'on':''}" onclick="S.tab=${i};S.sel=null;render()"><span>${x[0]}</span>${x[1]}</button>`).join('');
+  const keepTrace=keep?[$('flow').innerHTML,$('trace').innerHTML]:null;
+  $('screen').innerHTML=!S.onb?onboard():S.ride?ride():S.sel?detail():[home,intent,foot,me][t]();
+  if(keepTrace){$('flow').innerHTML=keepTrace[0];$('trace').innerHTML=keepTrace[1]}
+  $('log').innerHTML=S.log.length?S.log.map(x=>`<div>${x}</div>`).join(''):'<div>尚無事件</div>';
+  const e=S.ev;$('k3').innerHTML=`<div><b>${e.open}</b><div class="note">H1 非叫車開啟</div></div><div><b>${e.view?Math.round(e.decide*100/e.view):0}%</b><div class="note">H2 決策率</div></div><div><b>${e.cta?Math.round(e.ride*100/e.cta):0}%</b><div class="note">H3 叫車轉換</div></div>`;
+}
+function render(){render0(0)}
+function nextDay(){S.push=1;S.opened=0;S.sel=null;S.ride=null;log('模擬隔天：推播額度重置');render()}
+function resetAll(){clearTimeout(T);S=S0();render()}
+render();
 </script>
 </body>
 </html>

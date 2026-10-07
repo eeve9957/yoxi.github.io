@@ -3,16 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>yoxi AI 移動雷達</title>
+<title>yoxi AI 移動雷達 Demo</title>
 <style>
 :root{--bg:#E9EDF5;--card:#fff;--ink:#14213D;--mut:#5B6882;--or:#E8602C;--tint:#EEF3FB;--pk:#FDEBE3;--ok:#2EAD5B;--mid:#F2B705;--bad:#D64545;--line:#DDE3EE;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0A0F1C;--card:#16213A;--ink:#EAF0FB;--mut:#9AA8C2;--tint:#1F2C48;--pk:#3A2A26;--line:#2B3957}}
 :root[data-theme="dark"]{--bg:#0A0F1C;--card:#16213A;--ink:#EAF0FB;--mut:#9AA8C2;--tint:#1F2C48;--pk:#3A2A26;--line:#2B3957}
 html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",system-ui,sans-serif;font-size:15px;line-height:1.5;display:flex;align-items:center;justify-content:center}
-.phone{background:var(--card);width:100%;max-width:400px;height:100%;max-height:820px;display:flex;flex-direction:column;overflow:hidden}
+body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",system-ui,sans-serif;font-size:15px;line-height:1.5}
+.stage{height:100%;display:flex;align-items:center;justify-content:center;gap:22px}
+.phone{background:var(--card);width:100%;max-width:400px;height:100%;max-height:820px;display:flex;flex-direction:column;overflow:hidden;flex:none}
 @media(min-width:520px){body{padding:16px}.phone{border:7px solid #0b1224;border-radius:38px}}
+.side{display:none}
+.gmini{display:block}
+@media(min-width:960px){
+  .side{display:block;width:400px;flex:none;height:100%;max-height:820px;overflow-y:auto;padding:2px 4px 2px 0}
+  .gmini{display:none}
+  .side .card{background:var(--card)}.side .card.pk{background:var(--pk)}.side .card.nv{background:#14213D}
+}
 .bar0{display:flex;justify-content:space-between;align-items:center;padding:10px 16px 6px;font-weight:800}
 .logo{color:var(--or);font-size:18px}
 .screen{flex:1;overflow-y:auto;padding:6px 14px 16px}
@@ -26,11 +34,13 @@ body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Mic
 .mut{color:var(--mut);font-size:13px}.nv .mut{color:#B9C4DA}
 .btn{border:0;border-radius:12px;padding:12px 16px;font:inherit;font-weight:700;cursor:pointer;background:var(--tint);color:var(--ink)}
 .btn.or{background:var(--or);color:#fff}.btn.w{width:100%}.btn.sm{padding:6px 12px;font-size:13px}
+.nv .btn:not(.or){background:#2A3A5F;color:#fff}
 .row{display:flex;gap:8px;align-items:center}.sp{justify-content:space-between}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
 .tag{font-size:11px;font-weight:800;color:var(--or);letter-spacing:.5px}
-.opt{cursor:pointer;border:2px solid transparent;transition:.15s}.opt:active{border-color:var(--or)}
+.opt{cursor:pointer;border:2px solid transparent;transition:.15s}.opt:active,.opt:hover{border-color:var(--or)}
 .chip{background:var(--tint);border-radius:99px;padding:3px 10px;font-size:12px;color:var(--mut)}
+.chip.hl{background:var(--or);color:#fff}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
 .chips button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}
 .chips button.on{background:var(--or);color:#fff;border-color:var(--or)}
@@ -44,79 +54,156 @@ input[type=range]{width:100%;accent-color:var(--or)}
 .steps{display:flex;gap:6px;margin:10px 0}.steps i{flex:1;height:5px;border-radius:4px;background:var(--line)}.steps i.on{background:var(--or)}
 .pulse{width:70px;height:70px;border-radius:50%;background:var(--pk);margin:12px auto;display:grid;place-items:center;font-size:30px;animation:p 1.2s infinite}
 @keyframes p{50%{transform:scale(1.12)}}
-.k3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}.k3 div{background:var(--card);border-radius:12px;padding:8px;text-align:center}.k3 b{font-size:20px;color:var(--or)}
+.k3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}.k3 div{background:var(--card);border-radius:12px;padding:8px;text-align:center}.side .k3 div{background:var(--tint)}.k3 b{font-size:20px;color:var(--or)}
 .log{max-height:110px;overflow-y:auto;font-size:12px;color:var(--mut);margin-top:8px}.log div{padding:2px 0;border-bottom:1px dashed var(--line)}
 summary{cursor:pointer}.note{font-size:12px;color:var(--mut)}
+.eng{display:flex;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line)}.eng:last-child{border:0}
+.eng .tag{width:92px;flex:none;padding-top:2px}.eng b{font-size:13px}
+.jr{display:flex;gap:4px;margin:8px 0 2px}.jr div{flex:1;text-align:center;font-size:11px;color:var(--mut);border-top:4px solid var(--line);padding-top:4px}.jr div.on{border-color:var(--or);color:var(--or);font-weight:800}
+.badge{display:inline-block;margin:3px 4px 0 0;padding:3px 10px;border-radius:99px;font-size:12px;background:var(--card);color:var(--mut);border:1px dashed var(--line)}.badge.on{background:var(--or);color:#fff;border:1px solid var(--or)}
+.gdots{display:flex;gap:3px;margin:8px 0}.gdots i{flex:1;height:4px;border-radius:3px;background:#34466E}.gdots i.on{background:var(--or)}
+@media(prefers-reduced-motion:reduce){.pulse{animation:none}}
 </style>
 </head>
 <body>
-<div class="phone"><div class="bar0"><span class="logo">yoxi 雷達</span><span class="chip">11:00</span></div><div class="screen" id="screen"></div><div class="nav" id="nav"></div></div>
+<div class="stage">
+  <div class="phone"><div class="bar0"><span class="logo">yoxi 雷達</span><span class="chip" id="clk">平日 11:00</span></div><div class="screen" id="screen"></div><div class="nav" id="nav"></div></div>
+  <aside class="side" id="side" aria-label="評審觀察窗"></aside>
+</div>
 <script>
 const $=id=>document.getElementById(id);
-const PK={e:{t:'容易',c:'--ok',r:[2,4]},m:{t:'普通',c:'--mid',r:[5,8]},h:{t:'困難',c:'--bad',r:[8,15]}};
+
+/* ───────── 資料（對應簡報 P7／P10／P11／P13／P17） ───────── */
+/* 停車難度：Phase 1 三級標示、Phase 2 預估找位區間＋保守信心 */
+const PK={e:{t:'容易',c:'--ok',r:[2,4],k:'高'},m:{t:'普通',c:'--mid',r:[5,8],k:'中'},h:{t:'困難',c:'--bad',r:[8,15],k:'中低（保守標示）'}};
+/* 午餐 MVP：2 熟悉（w=步行分鐘）＋1 受控探索（d=車程分鐘，b=只突破的維度） */
 const FAM=[{n:'日式定食',c:'日式',w:6,p:'m'},{n:'越式料理',c:'越式',w:8,p:'m'},{n:'港式燒臘',c:'港式',w:5,p:'e'},{n:'麵食小館',c:'麵食',w:4,p:'e'}];
-const SUR=[{n:'韓式料理',c:'韓式',d:9,p:'h'},{n:'泰式料理',c:'泰式',d:12,p:'m'},{n:'義式餐酒館',c:'義式',d:14,p:'h'}];
-const INT={airport:{n:'機場',s:[35,25,5,15],tip:'行李多、停車費高、時間敏感'},station:{n:'車站',s:[30,20,5,15],tip:'尖峰接駁需求集中'},bar:{n:'酒吧',s:[30,20,0,15],tip:'飲酒後不開車，提供安全回程'},hospital:{n:'醫院',s:[30,20,5,10],tip:'停車與步行負擔大'},event:{n:'活動散場',s:[30,25,5,15],tip:'人潮湧出、停車一位難求'},rain:{n:'雨天',s:[10,15,35,15],tip:'步行意願下降'},none:{n:'一般午後',s:[0,5,0,10],tip:'沒有明確移動壓力'}};
+const SUR=[{n:'韓式料理',c:'韓式',d:9,p:'h',b:'距離'},{n:'泰式料理',c:'泰式',d:12,p:'m',b:'價格'},{n:'義式餐酒館',c:'義式',d:14,p:'h',b:'價格'}];
+/* 週末半日探索（in=室內；天氣不佳改推室內） */
+const WKF=[{n:'文創園區咖啡',c:'咖啡',w:6,p:'m',in:1},{n:'河濱單車散步',c:'戶外',w:7,p:'e',in:0},{n:'傳統市場小吃',c:'小吃',w:8,p:'m',in:0}];
+const WKS=[{n:'陶藝手作體驗',c:'手作',d:14,p:'m',b:'距離',in:1},{n:'山景咖啡露台',c:'景觀',d:22,p:'h',b:'距離',in:0}];
+/* 高意圖場景：s=[場域,停車難度,天氣,yoxi 供需]，st=官方資料佐證（簡報 P10） */
+const INT={
+ airport:{n:'機場',s:[35,25,5,15],tip:'行李多、停車費高、時間敏感',st:'官方資料 9,277 趟・凌晨 4–5 時為高峰'},
+ station:{n:'車站',s:[30,20,5,15],tip:'尖峰接駁需求集中',st:'官方資料 57,172 趟・高鐵／台鐵／轉運站，16 時最高'},
+ bar:{n:'酒吧／KTV',s:[30,20,0,15],tip:'飲酒後不開車，提供安全回程',st:'官方資料 9,896 趟・21–23 時；週末占 36%'},
+ hospital:{n:'醫院',s:[30,20,5,10],tip:'停車與步行負擔大',st:'官方資料 33,007 趟・8–10 時高峰；平日占 87%'},
+ event:{n:'活動散場',s:[30,25,5,15],tip:'人潮湧出、停車一位難求',st:'官方資料 4,706 趟・場館、展覽；週末占 42%'},
+ rain:{n:'雨天',s:[10,15,35,15],tip:'步行意願下降',st:'官方資料無天氣欄位，需串接氣象署'},
+ none:{n:'一般午後',s:[0,5,0,10],tip:'沒有明確移動壓力',st:'五類場景合計 11.4 萬趟，占全部叫車 11.8%'}
+};
 const SIG=['場域','停車難度','天氣','yoxi 供需'];
-const S0=()=>({onb:0,c:{loc:1,time:1,beh:1},tab:0,sel:null,ride:null,opened:0,avail:90,rain:0,intent:'airport',pref:{日式:2,越式:1,港式:1,麵食:1},explored:12,newShops:0,saved:0,parkMin:0,log:[],ev:{open:0,view:0,decide:0,cta:0,ride:0},push:1,off:0});
+/* 效益試算基準（簡報 P11／P13：官方資料 4 月） */
+const BASE={mau:78610,trips:342703,fare:254,costFull:284500};
+
+/* ───────── 狀態 ───────── */
+const S0=()=>({onb:0,c:{loc:1,time:1,beh:1},tab:0,mode:'lunch',sel:null,ride:null,opened:0,avail:90,rain:0,intent:'airport',
+  pref:{日式:2,越式:1,港式:1,麵食:1},hid:{},cs:{},explored:12,newShops:0,saved:0,parkMin:0,fam:0,nov:0,roi:5,
+  log:[],ev:{open:0,view:0,decide:0,cta:0,ride:0,ignore:0},push:1,off:0,g:0,ctlOpen:0,metOpen:0});
 let S=S0(),T=null;
-const L=()=>Math.floor((S.avail-30)/2);
+const L=()=>Math.floor((S.avail-30)/2);               /* 可用探索分鐘（單程） */
+const wk=()=>S.mode==='weekend';
 const log=t=>{S.log.unshift(new Date().toTimeString().slice(0,5)+'  '+t)};
 const cta=o=>o.mode==='車程'||S.rain;
 const pkTag=p=>`<span class="dot" style="background:var(${PK[p].c})"></span>停車${PK[p].t}`;
 const avg=p=>Math.round((PK[p].r[0]+PK[p].r[1])/2);
+const learn=(o,w)=>{if(o.c)S.pref[o.c]=(S.pref[o.c]||0)+w};
+const tally=o=>{if(o.kind)o.kind==='今天不一樣'?S.nov++:S.fam++};
+const imp=(k,t)=>{if(!S.cs[k]){S.cs[k]=1;S.ev.cta++;log('H3 CTA 曝光：'+t)}};
+
+/* Discovery Engine：2 熟悉＋1 受控探索 */
 function pick(){
   const l=L(),pr=x=>S.c.beh?(S.pref[x.c]||0):0;
-  const f=FAM.filter(x=>x.w<=l).sort((a,b)=>pr(b)-pr(a)).slice(0,2).map((x,i)=>({...x,kind:i?'今天方便':'平常喜歡',trav:x.w,mode:'步行'}));
-  const s=SUR.find(x=>x.d<=l);
+  const ok=x=>!S.hid[x.n]&&!(wk()&&S.rain&&!x.in);
+  const f=(wk()?WKF:FAM).filter(x=>ok(x)&&x.w<=l).sort((a,b)=>pr(b)-pr(a)).slice(0,2)
+    .map((x,i)=>({...x,kind:i?'今天方便':'平常喜歡',trav:x.w,mode:'步行'}));
+  const s=(wk()?WKS:SUR).find(x=>ok(x)&&x.d<=l);
   if(s)f.push({...s,kind:'今天不一樣',trav:s.d,mode:'車程'});
   return f;
 }
-/* onboarding */
+/* LLM 轉譯層：僅把結構化判斷轉成一句話（Demo 以模板模擬） */
+function sentence(o){
+  const pk=PK[o.p];
+  return `${o.kind==='今天不一樣'?'今天換個口味，':''}${o.n}${o.mode}${o.trav}分，停車${pk.t}${cta(o)?'，搭 yoxi 可省下找位時間':'，走路就到'}。`;
+}
+/* 後台判斷：三顆引擎＋LLM（簡報 P11） */
+function engines(o){
+  const l=L(),r=l>=9?'放大':l>=6?'步行':'近距離';
+  const rows=[
+    ['Context Engine','情境判斷',`${wk()?'週末上午':'平日 11:00'}・${S.c.loc?'工作生活圈':'預設區域'}・可用 ${S.avail} 分・${S.rain?'下雨':'晴'} → 探索半徑${r}（單程 ≤${l} 分）`],
+    ['Discovery Engine','2 熟悉＋1 受控探索',!o?'依偏好排序取前 2，再加 1 個「只突破距離或價格其中一項」的探索':!o.kind?'由情境雷達觸發，非探索推薦':o.kind==='今天不一樣'?`受控探索：只突破「${o.b||'距離'}」，其餘維持在常見範圍`:`命中偏好「${o.c}」${S.c.beh?`（權重 ${S.pref[o.c]||0}）`:'（未授權互動行為，不個人化）'}`],
+    ['Mobility Intent','何時顯示叫車',!o?'步行可達不推叫車；車程、下雨、高意圖場景才出現入口':cta(o)?`${o.mode==='車程'?'車程':'下雨'}＋停車${PK[o.p].t} → 顯示「叫 yoxi 前往」`:'步行可達 → 不顯示叫車入口，不硬推'],
+    ['LLM 轉譯層','結構化 → 一句話',o?sentence(o):'只轉譯上述判斷，不自行決策（Demo 為模板模擬）']
+  ];
+  return rows.map(x=>`<div class="eng"><span class="tag">${x[0]}</span><div><b>${x[1]}</b><div class="mut">${x[2]}</div></div></div>`).join('');
+}
+/* 成效埋點（H1／H2／H3，簡報 P14） */
+function metrics(){
+  const e=S.ev;
+  return `<div class="k3"><div><b>${e.open}</b><div class="note">H1 非叫車開啟</div></div><div><b>${e.view?Math.min(100,Math.round(e.decide*100/e.view)):0}%</b><div class="note">H2 決策率（${e.decide}/${e.view}）</div></div><div><b>${e.cta?Math.min(100,Math.round(e.ride*100/e.cta)):0}%</b><div class="note">H3 叫車轉換（${e.ride}/${e.cta}）</div></div></div>
+  <div class="log">${S.log.length?S.log.map(x=>`<div>${x}</div>`).join(''):'<div>尚無事件</div>'}</div>`;
+}
+
+/* ───────── Onboarding ───────── */
 function onboard(){
-  const sw=(k,t,d)=>`<div class="sw"><div><b>${t}</b><div class="mut">${d}</div></div><input type="checkbox" ${S.c[k]?'checked':''} onchange="S.c.${k}=this.checked?1:0"></div>`;
+  const sw=(k,t,d)=>`<div class="sw"><div><b>${t}</b><div class="mut">${d}</div></div><input type="checkbox" aria-label="${t}" ${S.c[k]?'checked':''} onchange="S.c.${k}=this.checked?1:0;render()"></div>`;
   return `<div style="text-align:center;margin:14px 0"><div class="pulse">📡</div><h2>yoxi 雷達</h2><div class="mut">想去哪 → 去得了 → 怎麼去</div></div>
   <div class="card"><b>讓推薦更懂你（可隨時關閉）</b>${sw('loc','常用地點','判斷工作生活圈與探索半徑')}${sw('time','常用時段','在合適時間提醒，每日最多 1 則')}${sw('beh','互動行為','學習你能接受的距離與口味')}</div>
   <p class="note">遵循個資法；送入 AI 的僅為結構化摘要，不含可識別個資。個人化僅來自你授權的 App 內互動，可隨時關閉或刪除。</p><button class="btn or w" onclick="S.onb=1;log('完成授權設定');render()">開始使用</button>`;
 }
-/* tab 0 */
+
+/* ───────── Tab 0：雷達 ───────── */
 function home(){
   if(S.off)return `<div class="card pk"><h3>雷達已關閉</h3><p class="mut">你已退出 yoxi 雷達，不會收到推薦與推播。</p><button class="btn or" onclick="S.off=0;render()">重新開啟</button></div>`;
-  const l=L(),zone=S.c.loc?'工作生活圈':'預設區域（未授權）';
-  const ctl=`<details class="card"><summary><b>情境控制（Demo）</b></summary><label class="mut">距離下個行程 <b id="av">${S.avail}</b> 分鐘</label><input type="range" min="40" max="120" step="5" value="${S.avail}" oninput="$('av').textContent=this.value" onchange="S.avail=+this.value;S.opened=1;render()"><label class="mut"><input type="checkbox" ${S.rain?'checked':''} onchange="S.rain=this.checked?1:0;render()"> 模擬下雨</label></details>`;
-  const head=`<div class="mut">平日 11:00・${zone}</div><h2>今天想去哪？</h2><div class="chips"><span class="chip">下個行程 ${S.avail} 分後</span><span class="chip">${S.rain?'下雨':'晴'}</span><span class="chip">${l>=9?'探索半徑：放大':l>=6?'探索半徑：步行':'探索半徑：近距離'}</span></div>`;
+  const l=L(),zone=S.c.loc?'工作生活圈':'預設區域（未授權）',W=wk();
+  const ctl=`<details class="card" ${S.ctlOpen?'open':''} ontoggle="S.ctlOpen=this.open?1:0"><summary><b>情境控制（Demo）</b></summary>
+    <div class="chips"><button class="${W?'':'on'}" onclick="setMode('lunch')">平日午餐</button><button class="${W?'on':''}" onclick="setMode('weekend')">週末半日探索</button></div>
+    <label class="mut">距離下個行程 <b id="av">${S.avail}</b> 分鐘</label><input type="range" min="40" max="120" step="5" value="${S.avail}" aria-label="距離下個行程分鐘數" oninput="$('av').textContent=this.value" onchange="S.avail=+this.value;S.opened=1;render()">
+    <label class="mut"><input type="checkbox" ${S.rain?'checked':''} onchange="S.rain=this.checked?1:0;render()"> 模擬下雨</label></details>`;
+  const head=`<div class="mut">${W?'週六 10:00':'平日 11:00'}・${zone}</div><h2>${W?'這週末去哪？':'今天想去哪？'}</h2><div class="chips"><span class="chip">下個行程 ${S.avail} 分後</span><span class="chip ${S.rain?'hl':''}">${S.rain?'下雨':'晴'}</span><span class="chip">${l>=9?'探索半徑：放大':l>=6?'探索半徑：步行':'探索半徑：近距離'}</span></div>`;
   if(!S.opened){
-    const push=S.c.time&&S.push>0?`<div class="card nv opt" onclick="openIt()"><div class="tag">yoxi・11:00・今日 1/1 則</div><b>今天時間比較充裕，要不要吃遠一點？</b><div class="mut">點擊查看 3 個選項</div></div>`:`<div class="card"><b>${S.c.time?'今日推播已達上限（1/1）':'未授權常用時段，不主動推播'}</b><div class="mut">寧可少而準。</div></div>`;
+    const msg=W?'這週末去哪？半日路線幫你排好了':l>=9?'今天時間比較充裕，要不要吃遠一點？':'午休時間有限，附近有 3 個快速選項';
+    const push=S.c.time&&S.push>0?`<div class="card nv opt" onclick="openIt()"><div class="tag">yoxi・${W?'週五 18:00':'11:00'}・今日 1/1 則</div><b>${msg}</b><div class="mut">點擊查看 3 個選項</div></div>`:`<div class="card"><b>${S.c.time?'今日推播已達上限（1/1）':'未授權常用時段，不主動推播'}</b><div class="mut">寧可少而準。</div></div>`;
     return head+push+`<button class="btn w" onclick="openIt()">直接開啟探索（非叫車情境）</button>`+ctl;
   }
   const ps=pick();
-  return head+`<div class="row sp" style="margin:8px 0"><b>2 個懂你＋1 個驚喜</b><button class="btn sm" onclick="log('重新整理推薦');render()">重新整理</button></div>`+
-    ps.map((o,i)=>`<div class="card opt" onclick="sel(${i})"><div class="row sp"><span class="tag">${o.kind}</span><span class="mut">${o.mode} ${o.trav} 分</span></div><h3>${o.n}</h3><div class="mut">${pkTag(o.p)}${cta(o)?'・可叫 yoxi':''}</div></div>`).join('')+
-    (ps.length<3?'<div class="card pk mut">時間較緊，今天不安排「驚喜」選項。</div>':'')+ctl;
+  const why=ps.length<3?[W&&S.rain?'天氣不佳，已改推室內選項。':'',ps.some(x=>x.kind==='今天不一樣')?'':'時間較緊或條件不符，今天不安排「驚喜」選項。'].filter(Boolean).join(''):'';
+  return head+`<div class="row sp" style="margin:8px 0"><b>${ps.length<3?ps.length+' 個選項':'2 個懂你＋1 個驚喜'}</b><button class="btn sm" onclick="log('重新整理推薦');render()">重新整理</button></div>`+
+    ps.map((o,i)=>`<div class="card opt" onclick="sel(${i})" role="button" tabindex="0" onkeydown="if(event.key==='Enter')sel(${i})"><div class="row sp"><span class="tag">${o.kind}</span><span class="mut">${o.mode} ${o.trav} 分</span></div><h3>${o.n}</h3><div class="mut">${pkTag(o.p)}${cta(o)?'・可叫 yoxi':''}${o.kind==='今天不一樣'?'・只突破'+o.b:''}</div></div>`).join('')+
+    (why?`<div class="card pk mut">${why}</div>`:'')+ctl;
 }
+function setMode(m){S.mode=m;S.sel=null;S.opened=1;log('切換情境：'+(m==='weekend'?'週末半日探索':'平日午餐'));render()}
 function openIt(){if(!S.opened){S.opened=1;S.ev.open++;if(S.push>0)S.push--;log('H1 非叫車開啟')}render()}
 function sel(i){S.sel=pick()[i];S.ev.view++;log('檢視 '+S.sel.n);render()}
 function detail(){
   const o=S.sel,pk=PK[o.p],drv=o.mode==='車程'?o.trav:Math.max(3,Math.round(o.trav/3)),show=cta(o),f=pk.r;
-  const sent=`${o.kind==='今天不一樣'?'今天換個口味，':''}${o.n}${o.mode}${o.trav}分，停車${pk.t}${show?'，搭 yoxi 可省下找位時間':'，走路就到'}。`;
-  return `<button class="btn sm" onclick="S.sel=null;render()">← 返回</button><div class="card" style="margin-top:10px"><span class="tag">${o.kind}</span><h2>${o.n}</h2><div class="mut">${o.mode} ${o.trav} 分・${pkTag(o.p)}</div><p style="margin:8px 0 0">${sent}</p></div>
-  ${show?`<b>怎麼去？</b><div class="row" style="margin:8px 0"><div class="card" style="flex:1;margin:0"><div class="mut">自行開車</div><div class="big">${drv+f[0]}–${drv+f[1]+3}<small style="font-size:13px"> 分</small></div><div class="mut">含找位約 ${f[0]}–${f[1]} 分（預估）</div></div><div class="card pk" style="flex:1;margin:0"><div class="mut">yoxi</div><div class="big">${drv+4}<small style="font-size:13px"> 分</small></div><div class="mut">預估等候 4 分，免找位</div></div></div>`:'<div class="card mut">步行即可抵達，不硬推叫車。</div>'}
-  <div class="row"><button class="btn" style="flex:1" onclick="act('save')">收藏</button><button class="btn" style="flex:1" onclick="act('nav')">導航</button></div>${show?'<button class="btn or w" style="margin-top:8px" onclick="startRide(S.sel,0)">叫 yoxi 前往</button>':''}`;
+  if(show)imp('d:'+o.n,o.n);
+  const lo=Math.max(0,f[0]-4),hi=f[1]-1;
+  const save=hi>0?`比自行開車約省 ${lo}–${hi} 分`:'停車容易，自行開車也方便';
+  return `<button class="btn sm" onclick="S.sel=null;render()">← 返回</button><div class="card" style="margin-top:10px"><span class="tag">${o.kind}</span><h2>${o.n}</h2><div class="mut">${o.mode} ${o.trav} 分・${pkTag(o.p)}${o.kind==='今天不一樣'?'・只突破'+o.b:''}</div><p style="margin:8px 0 0">${sentence(o)}</p></div>
+  ${show?`<b>怎麼去？</b><div class="row" style="margin:8px 0"><div class="card" style="flex:1;margin:0"><div class="mut">自行開車</div><div class="big">${drv+f[0]}–${drv+f[1]+3}<small style="font-size:13px"> 分</small></div><div class="mut">含找位約 ${f[0]}–${f[1]} 分（預估）<br>信心：${pk.k}</div></div><div class="card pk" style="flex:1;margin:0"><div class="mut">yoxi</div><div class="big">${drv+4}<small style="font-size:13px"> 分</small></div><div class="mut">預估等候 4 分，免找位<br>${save}</div></div></div>`:'<div class="card mut">步行即可抵達，不硬推叫車。</div>'}
+  <div class="row"><button class="btn" style="flex:1" onclick="act('save')">收藏</button><button class="btn" style="flex:1" onclick="act('nav')">導航</button><button class="btn" style="flex:1" onclick="act('skip')">不感興趣</button></div>${show?'<button class="btn or w" style="margin-top:8px" onclick="goRide()">叫 yoxi 前往</button>':''}
+  <details class="card gmini" style="margin-top:10px"><summary><b>AI 怎麼判斷</b></summary>${engines(o)}</details>`;
 }
-const learn=(o,w)=>{S.pref[o.c]=(S.pref[o.c]||0)+w};
+/* H2 決策：收藏／導航／前往；忽略也回饋給 Learn Loop */
 function act(k){
-  const o=S.sel;S.ev.decide++;
+  const o=S.sel;
+  if(k==='skip'){S.ev.ignore++;S.hid[o.n]=1;learn(o,-1);log('Learn Loop：忽略 '+o.n);S.sel=null;render();return}
+  S.ev.decide++;
   if(k==='save'){S.saved++;log('H2 決策：收藏 '+o.n);learn(o,1)}
-  else{S.explored++;S.newShops++;log('H2 決策：導航 '+o.n);learn(o,2)}
+  else{S.explored++;S.newShops++;log('H2 決策：導航 '+o.n);learn(o,2);tally(o)}
   S.sel=null;S.opened=1;S.tab=2;render();
 }
-/* ride */
+function goRide(){S.ev.decide++;log('H2 決策：前往 '+S.sel.n);startRide(S.sel,0)}
+
+/* ───────── 叫車流程（模擬） ───────── */
+function finish(r){const o=r.o;r.st=3;r.p=100;S.explored++;S.newShops++;S.parkMin+=avg(o.p);learn(o,2);tally(o);log('行程完成：'+o.n)}
 function startRide(o,fi){
-  S.ev.cta++;S.ev.ride++;S.ride={o,st:0,p:0,fi};log('H3 叫車轉換：'+o.n);clearTimeout(T);
+  S.ev.ride++;S.ride={o,st:0,p:0,fi};log('H3 叫車轉換：'+o.n);clearTimeout(T);
   T=setTimeout(function go(){
-    const r=S.ride;if(!r)return;
+    const r=S.ride;if(!r||r.st>=3)return;
     if(r.st<2)r.st++;
-    else{r.p+=20;if(r.p>=100){r.st=3;S.explored++;S.newShops++;S.parkMin+=avg(o.p);learn(o,2);log('行程完成：'+o.n)}}
+    else{r.p+=20;if(r.p>=100)finish(r)}
     if(r.st<3)T=setTimeout(go,r.st===1?1800:700);
     render();
   },1600);
@@ -131,40 +218,96 @@ function ride(){
     `<div class="card pk"><h3>🎉 已抵達 ${o.n}</h3><p class="mut">這趟省下約 ${avg(o.p)} 分鐘找停車時間，已加入你的探索足跡。</p><button class="btn or w" onclick="S.ride=null;S.sel=null;S.tab=2;render()">查看探索足跡</button></div>`][r.st];
   return `<div class="steps">${[0,1,2,3].map(i=>`<i class="${i<=r.st?'on':''}"></i>`).join('')}</div><h2 style="text-align:center">${lab}</h2><div class="mut" style="text-align:center">前往 ${o.n}</div>${body}${r.st<3?`<button class="btn w" onclick="clearTimeout(T);S.ride=null;log('取消叫車');render()">取消</button>`:''}`;
 }
-/* tab 1 */
+
+/* ───────── Tab 1：情境雷達 ───────── */
 function intent(){
   const x=INT[S.intent],sc=x.s.reduce((a,b)=>a+b,0),show=sc>=60;
+  if(show)imp('i:'+S.intent,x.n);
   return `<h2>情境雷達</h2><div class="mut">模擬你正在以下場景（綜合場域、停車、天氣、供需，達 60 分才顯示叫車入口）</div><div class="chips">${Object.keys(INT).map(k=>`<button class="${S.intent===k?'on':''}" onclick="S.intent='${k}';render()">${INT[k].n}</button>`).join('')}</div>
-  <div class="card"><h3>${x.n}</h3><div class="mut">${x.tip}</div></div>${x.s.map((v,i)=>`<div class="row sp mut"><span>${SIG[i]}</span><span>${v}</span></div><div class="bar" style="margin:3px 0 8px"><i style="width:${v*100/40}%"></i></div>`).join('')}<div class="big" style="margin:6px 0">${sc} 分</div>
-  ${show?`<div class="card pk"><b>${S.intent==='bar'?'喝了酒就別開車':'現在適合叫 yoxi'}</b><div class="mut">預估等候 4 分</div><button class="btn or w" style="margin-top:8px" onclick="startRide({n:'${x.n}周邊',mode:'車程',trav:10,p:'e',c:''},1)">叫 yoxi 前往</button></div>`:'<div class="card"><b>不顯示叫車入口</b><div class="mut">沒有明確移動壓力，先提供價值，不打擾。</div></div>'}`;
+  <div class="card"><h3>${x.n}</h3><div class="mut">${x.tip}</div><div class="note" style="margin-top:4px">📊 ${x.st}</div></div>${x.s.map((v,i)=>`<div class="row sp mut"><span>${SIG[i]}</span><span>${v}</span></div><div class="bar" style="margin:3px 0 8px"><i style="width:${v*100/40}%"></i></div>`).join('')}<div class="big" style="margin:6px 0">${sc} 分<small style="font-size:13px;color:var(--mut)"> ／ 門檻 60</small></div>
+  ${show?`<div class="card pk"><b>${S.intent==='bar'?'喝了酒就別開車，提供安全回程':'現在適合叫 yoxi'}</b><div class="mut">預估等候 4 分</div><button class="btn or w" style="margin-top:8px" onclick="startRide({n:'${x.n}周邊',mode:'車程',trav:10,p:'e',c:''},1)">叫 yoxi 前往</button></div>`:'<div class="card"><b>不顯示叫車入口</b><div class="mut">沒有明確移動壓力，先提供價值，不打擾。</div></div>'}`;
 }
-/* tab 2 */
+
+/* ───────── Tab 2：探索足跡／月報 ───────── */
 function foot(){
-  const f=Math.min(12,Math.round(S.explored/3)),top=Object.entries(S.pref).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const f=Math.min(12,Math.round(S.explored/3)),top=Object.entries(S.pref).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const tot=S.fam+S.nov,np=tot?Math.round(S.nov*100/tot):0;
+  const B=[['初次嘗新',S.nov>=1],['生活圈拓荒者',S.explored>=15],['省時達人',S.parkMin>=10]];
   return `<h2>探索足跡</h2><div class="card"><div class="mut" style="margin-bottom:8px">已探索 ${S.explored} 家・生活圈 ${f}/12 區</div><div class="grid">${Array.from({length:12},(_,i)=>`<span class="${i<f?'f':''}"></span>`).join('')}</div></div>
-  <div class="card pk"><h3>每週移動週報</h3><div class="row sp"><span>探索新店</span><b>${S.newShops+2} 家</b></div><div class="row sp"><span>收藏</span><b>${S.saved} 家</b></div><div class="row sp"><span>省下找停車時間</span><b>${S.parkMin} 分</b></div><div class="row sp"><span>常去時段</span><b>11:00–12:00</b></div></div>
-  <div class="card"><h3>越用越懂</h3>${S.c.beh?top.map(([k,v])=>`<div class="mut">${k}</div><div class="bar" style="margin:2px 0 6px"><i style="width:${Math.min(100,v*14)}%"></i></div>`).join(''):'<div class="mut">未授權互動行為，目前不做個人化。</div>'}</div>`;
+  <div class="card pk"><h3>我的移動月報</h3><div class="row sp"><span>探索新店</span><b>${S.newShops+2} 家</b></div><div class="row sp"><span>收藏</span><b>${S.saved} 家</b></div><div class="row sp"><span>省下找停車時間</span><b>${S.parkMin} 分</b></div><div class="row sp"><span>常去時段</span><b>11:00–12:00</b></div>
+    <div class="mut" style="margin-top:8px">熟悉 vs 嘗新：${tot?`熟悉 ${S.fam}・嘗新 ${S.nov}（嘗新 ${np}%）`:'完成一次出門後開始統計'}</div><div class="bar" style="margin:3px 0"><i style="width:${np}%"></i></div>
+    <div style="margin-top:6px">${B.map(b=>`<span class="badge ${b[1]?'on':''}">${b[1]?'🏅 ':'🔒 '}${b[0]}</span>`).join('')}</div></div>
+  <div class="card"><h3>越用越懂</h3>${S.c.beh?(top.length?top.map(([k,v])=>`<div class="mut">${k}</div><div class="bar" style="margin:2px 0 6px"><i style="width:${Math.min(100,v*14)}%"></i></div>`).join(''):'<div class="mut">互動後開始學習偏好。</div>'):'<div class="mut">未授權互動行為，目前不做個人化。</div>'}</div>`;
 }
-/* tab 3 */
+
+/* ───────── Tab 3：我的 ───────── */
 function me(){
-  const sw=(k,t)=>`<div class="sw"><b>${t}</b><input type="checkbox" ${S.c[k]?'checked':''} onchange="S.c.${k}=this.checked?1:0;log('授權變更：${t}');render()"></div>`,e=S.ev;
+  const sw=(k,t)=>`<div class="sw"><b>${t}</b><input type="checkbox" aria-label="${t}" ${S.c[k]?'checked':''} onchange="S.c.${k}=this.checked?1:0;log('授權變更：${t}');render()"></div>`;
+  const p=S.roi/100,tr=Math.floor(BASE.mau*p),amt=tr*BASE.fare;
   return `<h2>我的</h2><div class="card"><b>資料授權</b>${sw('loc','常用地點')}${sw('time','常用時段')}${sw('beh','互動行為')}</div>
-  <div class="card"><div class="sw" style="border:0"><div><b>yoxi 雷達</b><div class="mut">關閉後不再收到推薦與推播</div></div><input type="checkbox" ${S.off?'':'checked'} onchange="S.off=this.checked?0:1;log('雷達 '+(S.off?'關閉':'開啟'));render()"></div></div>
+  <div class="card"><div class="sw" style="border:0"><div><b>yoxi 雷達</b><div class="mut">關閉後不再收到推薦與推播</div></div><input type="checkbox" aria-label="yoxi 雷達" ${S.off?'':'checked'} onchange="S.off=this.checked?0:1;log('雷達 '+(S.off?'關閉':'開啟'));render()"></div></div>
   <div class="card"><b>推播頻率</b><div class="mut">每日最多 1 則，寧可少而準</div></div>
-  <details class="card"><summary><b>成效埋點（Demo）</b></summary><div class="k3"><div><b>${e.open}</b><div class="note">H1 非叫車開啟</div></div><div><b>${e.view?Math.round(e.decide*100/e.view):0}%</b><div class="note">H2 決策率</div></div><div><b>${e.cta?Math.round(e.ride*100/e.cta):0}%</b><div class="note">H3 叫車轉換</div></div></div><div class="log">${S.log.length?S.log.map(x=>`<div>${x}</div>`).join(''):'<div>尚無事件</div>'}</div><div class="row" style="margin-top:8px"><button class="btn sm" onclick="nextDay()">模擬隔天</button></div></details>
+  <div class="card pk"><b>增量叫車試算（簡報 P13）</b><div class="chips">${[2,5,10].map(v=>`<button class="${S.roi===v?'on':''}" onclick="S.roi=${v};render()">${v}% 月活多叫 1 趟</button>`).join('')}</div>
+    <div class="row sp"><span>增量趟次／月</span><b>${tr.toLocaleString()}</b></div><div class="row sp"><span>占 4 月趟次</span><b>+${(tr*100/BASE.trips).toFixed(1)}%</b></div><div class="row sp"><span>增量乘車金額</span><b>約 NT$${Math.round(amt/10000)} 萬</b></div>
+    <div class="note" style="margin-top:6px">全量月成本約 NT$28.5 萬（約 3.6／人），約 ${(BASE.costFull/BASE.fare*100/BASE.mau).toFixed(1)}% 月活乘客每月多叫 1 趟即可覆蓋。基準：官方資料 4 月月活 78,610、342,703 趟、單趟中點約 NT$254。</div></div>
+  <details class="card" ${S.metOpen?'open':''} ontoggle="S.metOpen=this.open?1:0"><summary><b>成效埋點（Demo）</b></summary>${metrics()}<div class="row" style="margin-top:8px"><button class="btn sm" onclick="nextDay()">模擬隔天</button></div></details>
   <button class="btn w" onclick="resetAll()">刪除我的資料並重置</button><p class="note">AI 僅轉譯結構化判斷；本 Demo 所有資料皆為模擬，非真實 Pilot 結果。</p>`;
 }
-/* shell */
+
+/* ───────── Demo 導覽（評審流程，對應簡報頁） ───────── */
+const base=()=>{clearTimeout(T);S.ride=null;S.sel=null;S.off=0};
+const G=[
+ {t:'授權與隱私',s:'P8・P15',d:'三項資料授權可隨時關閉，只送結構化摘要給 AI。',go(){base();S.onb=0;S.tab=0}},
+ {t:'11:00 推播：寧可少而準',s:'P7',d:'每日最多 1 則，不打擾也不硬推。',go(){base();S.onb=1;S.tab=0;S.mode='lunch';S.rain=0;S.avail=90;S.opened=0;S.push=1}},
+ {t:'點開探索（H1 非叫車開啟）',s:'P4・P14',d:'不叫車也有理由打開 yoxi。',go(){base();S.tab=0;S.opened=0;openIt()}},
+ {t:'時間變緊 → 半徑縮小',s:'P6',d:'下個行程剩 45 分：只留近距離，自動收起「驚喜」。',go(){base();S.tab=0;S.opened=1;S.avail=45}},
+ {t:'時間充裕 → 2 懂你＋1 驚喜',s:'P6・P7',d:'驚喜只突破距離或價格其中一項。',go(){base();S.tab=0;S.opened=1;S.avail=90}},
+ {t:'車程與停車難度一眼看懂',s:'P7・P17',d:'點「今天不一樣」，比較自行開車與 yoxi。',go(){base();S.tab=0;const p=pick();S.sel=p[2]||p[0];S.ev.view++;log('檢視 '+S.sel.n)}},
+ {t:'叫 yoxi 前往（H3）',s:'P10・P13',d:'叫車入口只在需要時出現；約 8 秒完成模擬行程。',go(){if(!S.sel){const p=pick();S.sel=p[2]||p[0];S.ev.view++}goRide()}},
+ {t:'探索足跡與移動月報',s:'P9',d:'行程完成後累積足跡、熟悉 vs 嘗新與徽章。',go(){if(S.ride&&S.ride.st<3){clearTimeout(T);finish(S.ride)}S.ride=null;S.sel=null;S.tab=2}},
+ {t:'週末＋下雨 → 改推室內',s:'P9',d:'每週迴圈：天氣不佳時改推室內半日路線。',go(){base();S.tab=0;S.opened=1;S.mode='weekend';S.rain=1;S.avail=90}},
+ {t:'情境雷達：機場',s:'P10',d:'場域、停車、天氣、供需合計達 60 分才出現叫車入口。',go(){base();S.mode='lunch';S.rain=0;S.tab=1;S.intent='airport'}},
+ {t:'一般午後：不顯示叫車入口',s:'P10',d:'沒有明確移動壓力，先提供價值，不打擾。',go(){base();S.tab=1;S.intent='none'}},
+ {t:'成效埋點與效益試算',s:'P13・P14',d:'H1／H2／H3 即時累計；5% 月活多叫 1 趟 ≈ +1.1% 趟次。',go(){base();S.tab=3;S.metOpen=1}}
+];
+function guideRun(){
+  if(S.g>=G.length){resetAll();return}
+  const st=G[S.g];S.onb=S.onb||0;st.go();log('導覽 '+(S.g+1)+'：'+st.t);S.g++;render();
+}
+function guide(){
+  const n=G.length,g=S.g,cur=G[g];
+  return `<div class="card nv"><div class="row sp"><span class="tag">DEMO 導覽 ${Math.min(g+1,n)}／${n}</span><button class="btn sm" onclick="resetAll()">重置 Demo</button></div>
+  <div class="gdots">${G.map((_,i)=>`<i class="${i<g?'on':''}"></i>`).join('')}</div>
+  ${cur?`<b>下一步：${cur.t}</b><div class="mut">${cur.d}（簡報 ${cur.s}）</div><button class="btn or w" style="margin-top:8px" onclick="guideRun()">▶ 執行　<span style="opacity:.7;font-weight:400">快捷鍵 →</span></button>`:`<b>導覽完成 ✅</b><div class="mut">十二個步驟涵蓋簡報主要功能。</div><button class="btn or w" style="margin-top:8px" onclick="guideRun()">重新開始</button>`}</div>`;
+}
+function journey(){
+  const st=S.ride?3:(S.sel||S.ev.decide)?2:S.opened?1:0;
+  const L4=[['11:00','情境判斷・推播'],['11:02','點開探索'],['11:05','決策'],['11:10','出發']];
+  return `<div class="card"><b>使用者旅程（簡報 P7）</b><div class="jr">${L4.map((x,i)=>`<div class="${i===st?'on':''}">${x[0]}<br>${x[1]}</div>`).join('')}</div></div>`;
+}
+function side(){
+  const o=S.sel||(S.ride&&S.ride.o);
+  return `<div class="row sp" style="margin:2px 0 8px"><b style="font-size:17px">評審觀察窗</b><span class="note">左：使用者看到的　右：後台 AI 怎麼判斷</span></div>`+guide()+journey()+
+   `<div class="card"><b>AI 怎麼判斷${o?'：'+o.n:''}</b>${engines(o)}</div><div class="card"><b>成效指標（H1／H2／H3）</b>${metrics()}</div><p class="note">所有數據為模擬，非真實 Pilot 結果；資料基準為 yoxi 官方數據 2026/2–4 月。</p>`;
+}
+
+/* ───────── 外殼 ───────── */
 function render(){
-  const t=S.tab,sc=$('screen'),y=sc.scrollTop,open=document.querySelector('details[open]');
+  const t=S.tab,sc=$('screen'),sd=$('side'),y=sc.scrollTop,y2=sd.scrollTop;
   $('nav').style.display=S.onb&&!S.ride?'flex':'none';
   $('nav').innerHTML=[['📡','雷達'],['🌦','情境'],['🗺','足跡'],['👤','我的']].map((x,i)=>`<button class="${t===i?'on':''}" onclick="S.tab=${i};S.sel=null;render()"><span>${x[0]}</span>${x[1]}</button>`).join('');
-  sc.innerHTML=!S.onb?onboard():S.ride?ride():S.sel?detail():[home,intent,foot,me][t]();
-  if(open){const d=sc.querySelector('details');if(d)d.open=true}
-  sc.scrollTop=y;
+  $('clk').textContent=wk()?'週六 10:00':'平日 11:00';
+  const main=!S.onb?onboard():S.ride?ride():S.sel?detail():[home,intent,foot,me][t]();
+  sc.innerHTML=(S.ride?'':`<div class="gmini">${guide()}</div>`)+main;
+  sd.innerHTML=side();
+  sc.scrollTop=y;sd.scrollTop=y2;
 }
 function nextDay(){S.push=1;S.opened=0;S.sel=null;S.ride=null;S.tab=0;log('模擬隔天：推播額度重置');render()}
 function resetAll(){clearTimeout(T);S=S0();render()}
+document.addEventListener('keydown',e=>{
+  const tg=document.activeElement&&document.activeElement.tagName;
+  if(e.key==='ArrowRight'&&tg!=='INPUT'&&tg!=='TEXTAREA'){e.preventDefault();guideRun()}
+});
 render();
 </script>
 </body>
